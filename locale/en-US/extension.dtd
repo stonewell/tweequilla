@@ -1,0 +1,11 @@
+<!ENTITY twitterInstructions "To connect to a twitter account, first press the 'Step 1' button, login to you twitter account, and agree to authorize.">
+<!ENTITY step1 "Step 1: Get PIN">
+<!ENTITY step2 "Step 2: Enter PIN">
+<!ENTITY step3 "Step 3: Accept PIN">
+<!ENTITY step1detail "You will be send to twitter.com and asked to authenticate access to your twitter account.">
+<!ENTITY step2detail "Enter the PIN you were given from twitter.com and click the 'Step 3' button to complete the process.">
+<!ENTITY username "Twitter Username">
+<!ENTITY clickhere1 "Click Here First">
+<!ENTITY clickhere3 "Click Here after entering PIN">
+<!ENTITY whenset "Set during Twitter authorization">
+<!ENTITY TwitterAuthorization "Twitter Authorization">

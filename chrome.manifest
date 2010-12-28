@@ -1,0 +1,6 @@
+content  tweequilla content/
+locale   tweequilla en-US locale/en-US/
+skin     tweequilla classic/1.0 skin/
+resource tweequilla modules/
+overlay  chrome://messenger/content/messenger.xul chrome://tweequilla/content/thunderbirdOverlay.xul
+overlay  chrome://messenger/content/AccountManager.xul chrome://tweequilla/content/AccountManagerOverlay.xul
