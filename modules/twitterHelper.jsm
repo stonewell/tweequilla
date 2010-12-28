@@ -286,6 +286,43 @@ function statuses_friends_timeline(aCallback, aErrorCallback, aContext, aFormat,
   this._self._sendRequest(feedURL, aCallback, aErrorCallback, true, aContext);
 }
 
+TwitterHelper.prototype.statuses.home_timeline  = 
+function statuses_home_timeline(aCallback, aErrorCallback, aContext, aFormat, aSince, aSinceId, aCount, aPage)
+{
+  dump("statuses_home_timeline\n");
+  var feedURL = this._self.mBaseURL + "statuses/home_timeline." + aFormat;
+
+  feedURL = this._self._addParamToQueryURL(feedURL, false, aSince, "since");
+  feedURL = this._self._addParamToQueryURL(feedURL, aSince, aSinceId, "since_id");
+  feedURL = this._self._addParamToQueryURL(feedURL, aSince || aSinceId, aCount, "count");
+  feedURL = this._self._addParamToQueryURL(feedURL, aSince || aSinceId || aCount, aPage, "page");
+  this._self._sendRequest(feedURL, aCallback, aErrorCallback, true, aContext);
+}
+
+TwitterHelper.prototype.statuses.retweets_of_me  = 
+function statuses_retweets_of_me(aCallback, aErrorCallback, aContext, aFormat, aSince, aSinceId, aCount, aPage)
+{
+  var feedURL = this._self.mBaseURL + "statuses/retweets_of_me." + aFormat;
+
+  feedURL = this._self._addParamToQueryURL(feedURL, false, aSince, "since");
+  feedURL = this._self._addParamToQueryURL(feedURL, aSince, aSinceId, "since_id");
+  feedURL = this._self._addParamToQueryURL(feedURL, aSince || aSinceId, aCount, "count");
+  feedURL = this._self._addParamToQueryURL(feedURL, aSince || aSinceId || aCount, aPage, "page");
+  this._self._sendRequest(feedURL, aCallback, aErrorCallback, true, aContext);
+}
+
+TwitterHelper.prototype.statuses.retweeted_by_me  = 
+function statuses_retweeted_by_me(aCallback, aErrorCallback, aContext, aFormat, aSince, aSinceId, aCount, aPage)
+{
+  var feedURL = this._self.mBaseURL + "statuses/retweeted_by_me." + aFormat;
+
+  feedURL = this._self._addParamToQueryURL(feedURL, false, aSince, "since");
+  feedURL = this._self._addParamToQueryURL(feedURL, aSince, aSinceId, "since_id");
+  feedURL = this._self._addParamToQueryURL(feedURL, aSince || aSinceId, aCount, "count");
+  feedURL = this._self._addParamToQueryURL(feedURL, aSince || aSinceId || aCount, aPage, "page");
+  this._self._sendRequest(feedURL, aCallback, aErrorCallback, true, aContext);
+}
+
 TwitterHelper.prototype.statuses.user_timeline  = 
 function statuses_user_timeline(aCallback, aErrorCallback, aContext, aFormat, aUserId, aSince, aSinceId, aCount, aPage)
 {
@@ -313,6 +350,23 @@ function statuses_friends(aCallback, aErrorCallback, aContext, aFormat, aUserId,
     feedURL = this._self.mBaseURL + "statuses/friends." + aFormat;
 
   feedURL = this._self._addParamToQueryURL(feedURL, false, aPage, "page");
+
+  this._self._sendRequest(feedURL, aCallback, aErrorCallback, true, aContext);
+}
+
+TwitterHelper.prototype.statuses.mentions  = 
+function statuses_mentions(aCallback, aErrorCallback, aContext, aFormat, aUserId, aSince, aSinceId, aCount, aPage)
+{
+  var feedURL;
+  if (aUserId)
+    feedURL = this._self.mBaseURL + "statuses/mentions/" + aUserId + "." + aFormat;
+  else
+    feedURL = this._self.mBaseURL + "statuses/mentions." + aFormat;
+
+  feedURL = this._self._addParamToQueryURL(feedURL, false, aSince, "since");
+  feedURL = this._self._addParamToQueryURL(feedURL, aSince, aSinceId, "since_id");
+  feedURL = this._self._addParamToQueryURL(feedURL, aSince || aSinceId, aCount, "count");
+  feedURL = this._self._addParamToQueryURL(feedURL, aSince || aSinceId || aCount, aPage, "page");
 
   this._self._sendRequest(feedURL, aCallback, aErrorCallback, true, aContext);
 }

@@ -141,6 +141,14 @@ TwitterFolderOverride.prototype =
       twh.statuses.user_timeline(listener.callback, listener.errorCallback, this, "json");
     else if (action == "FriendsTimeline")
       twh.statuses.friends_timeline(listener.callback, listener.errorCallback, this, "json");
+    else if (action == "HomeTimeline")
+      twh.statuses.home_timeline(listener.callback, listener.errorCallback, this, "json");
+    else if (action == "Mentions")
+      twh.statuses.mentions(listener.callback, listener.errorCallback, this, "json");
+    else if (action == "RetweetsOfMe")
+      twh.statuses.retweets_of_me(listener.callback, listener.errorCallback, this, "json");
+    else if (action == "RetweetedByMe")
+      twh.statuses.retweeted_by_me(listener.callback, listener.errorCallback, this, "json");
     else
       throw("Unrecognized twitter action");
 
@@ -162,35 +170,30 @@ TwitterFolderOverride.prototype =
   // create if needed standard Twitter folders
   makeStandardFolders: function _makeStandardFolders(aRootMsgFolder)
   { try {
+
     dl('\nmakeStandardFolders');
-    //return;
-    // add at least one subfolder
 
-    // We use internal names known to everyone like Sent, Templates and Drafts
-    let sentFolder = "Sent Items";
-
-    let sentMsgFolder;
-    try {
-      sentMsgFolder = aRootMsgFolder.getChildNamed(sentFolder);
-    } 
-    catch (e)
+    function makeFolder(aName, aTwitterAction)
     {
-      sentMsgFolder = aRootMsgFolder.addSubfolder(sentFolder);
+      let msgFolder;
+      try {
+        msgFolder = aRootMsgFolder.getChildNamed(aName);
+      } 
+      catch (e)
+      {
+        msgFolder = aRootMsgFolder.addSubfolder(aName);
+      }
+      msgFolder.setStringProperty("TwitterAction", aTwitterAction);
+      return msgFolder;
     }
-    sentMsgFolder.setStringProperty("TwitterAction", "UserTimeline");
+      
+    let sentMsgFolder = makeFolder("My Tweets", "UserTimeline");
     sentMsgFolder.setFlag(Ci.nsMsgFolderFlags.SentMail);
 
-    let timelineFolder = "Timeline";
-    let timelineMsgFolder;
-    try 
-    {
-      timelineMsgFolder = aRootMsgFolder.getChildNamed(timelineFolder);
-    }
-    catch(e)
-    {
-        timelineMsgFolder = aRootMsgFolder.addSubfolder(timelineFolder);
-    }
-    timelineMsgFolder.setStringProperty("TwitterAction", "FriendsTimeline");
+    makeFolder("Timeline", "HomeTimeline");
+    makeFolder("Mentions", "Mentions");
+    makeFolder("Retweets of me", "RetweetsOfMe");
+    makeFolder("Retweeted by me", "RetweetedByMe");
   } catch (e) {re(e);}},
 
   reconcileFolder: function _reconcileFolder(aJso)
