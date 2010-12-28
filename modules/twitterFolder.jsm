@@ -54,8 +54,27 @@ function createAtom(aName)
 
 var gFolderLoadedAtom = createAtom("FolderLoaded");
 
-function re(e) {
-  dump(e + "\n");
+function re(error)
+{
+  if (error)
+    dump('javascript error: ' + error + '\n');
+  let jsFrame;
+  if (!error || !(jsFrame = error.stack))
+    jsFrame = Components.stack;
+  while (jsFrame)
+  {
+    dump(jsFrame.toString() + '\n');
+    jsFrame = jsFrame.caller;
+  }
+  if (error)
+  {
+    Cu.reportError(error);
+    throw(error);
+  }
+}
+
+function dl(t) {
+  dump(t + "\n");
 }
 
 function TwitterFolder()
@@ -69,24 +88,25 @@ function TwitterFolder()
   folder instanceof Ci.nsIRDFResource;
   folder instanceof Ci.msqISgMailFolder;
   folder instanceof Ci.msqIOverride;
-  this.sgFolder = folder;
   this.__proto__.__proto__ = folder;
 
   folder.saveServerType("twitter");
 
   // define the overrides
   // Get the parent cpp class to allow calling overridden base functions
-  this.jsFolder = new TwitterFolderOverride(this);
+  this.jsFolder = new TwitterFolderOverride(folder);
   folder.jsParent = this.jsFolder;
   folder.override("msqSgMailFolderOverridable::UpdateFolder");
+  folder.override("msqSgMailFolderOverridable::GetSubFolders");
 
 }
 
 function TwitterFolderOverride(aFolder) {
   this.wrappedJSObject = this;
   // initialization of member variables
-  this.compositeFolder = aFolder;
+  this.baseFolder = aFolder;
   this.mNeedFolderLoadedEvent = false;
+  this.needsBaseFolders = true;
 }
 
 TwitterFolderOverride.prototype = 
@@ -96,7 +116,7 @@ TwitterFolderOverride.prototype =
   // **** nsIMsgFolder overrides
   updateFolder: function _updateFolder(aWindow)
   { try {
-    let server = this.compositeFolder.sgFolder.server;
+    let server = this.baseFolder.server;
     this.mNeedFolderLoadedEvent = true;
     let twitterConsumer = new TwitterConsumer();
     // get the authorization token and secret
@@ -110,24 +130,69 @@ TwitterFolderOverride.prototype =
     twitterConsumer.accessTokenSecret = secret;
     let twh = new TwitterHelper(twitterConsumer, null, "twitter");
     // todo: use the context only to pass context, not a new FolderListener instance?
-    let listener = new FolderListener(this.compositeFolder);
+    let listener = new FolderListener(this.baseFolder);
 
     // determine the action to take
     let action = null;
     try {
-      action = this.compositeFolder.sgFolder.getStringProperty("TwitterAction");
+      action = this.baseFolder.getStringProperty("TwitterAction");
     } catch(e) {}
-    //dump("TwitterAction <" + action + "> for folder " + this.compositeFolder.sgFolder.name + "\n");
-    if (!action || action == "UserTimeline")
-      twh.statuses.user_timeline(listener.callback, listener.errorCallback, this.compositeFolder, "json");
+    if (action == "UserTimeline")
+      twh.statuses.user_timeline(listener.callback, listener.errorCallback, this, "json");
     else if (action == "FriendsTimeline")
-      twh.statuses.friends_timeline(listener.callback, listener.errorCallback, this.compositeFolder, "json");
+      twh.statuses.friends_timeline(listener.callback, listener.errorCallback, this, "json");
     else
-      dump("Unrecognized twitter action\n");
+      throw("Unrecognized twitter action");
 
   } catch(e) {re(e);}},
 
+  get subFolders()
+  { try {
+    let base = this.baseFolder.base.QueryInterface(Ci.nsIMsgFolder);
+    if (base.isServer && this.needsBaseFolders)
+    {
+      this.needsBaseFolders = false;
+      this.makeStandardFolders(base);
+    }
+    let subFolders = base.subFolders;
+    return subFolders;
+  } catch(e) {re(e);}},
+
   // **** local methods
+  // create if needed standard Twitter folders
+  makeStandardFolders: function _makeStandardFolders(aRootMsgFolder)
+  { try {
+    dl('\nmakeStandardFolders');
+    //return;
+    // add at least one subfolder
+
+    // We use internal names known to everyone like Sent, Templates and Drafts
+    let sentFolder = "Sent Items";
+
+    let sentMsgFolder;
+    try {
+      sentMsgFolder = aRootMsgFolder.getChildNamed(sentFolder);
+    } 
+    catch (e)
+    {
+      sentMsgFolder = aRootMsgFolder.addSubfolder(sentFolder);
+    }
+    sentMsgFolder.setStringProperty("TwitterAction", "UserTimeline");
+    sentMsgFolder.setFlag(Ci.nsMsgFolderFlags.SentMail);
+
+    let timelineFolder = "Timeline";
+    let timelineMsgFolder;
+    try 
+    {
+      timelineMsgFolder = aRootMsgFolder.getChildNamed(timelineFolder);
+    }
+    catch(e)
+    {
+        timelineMsgFolder = aRootMsgFolder.addSubfolder(timelineFolder);
+    }
+    timelineMsgFolder.setStringProperty("TwitterAction", "FriendsTimeline");
+  } catch (e) {re(e);}},
+
   reconcileFolder: function _reconcileFolder(aJso)
   {
     for (item in aJso)
@@ -148,7 +213,7 @@ TwitterFolderOverride.prototype =
     */
     dump("twitter status text: " + aJsItem.text + "\n");
     // add to database if needed
-    let db = this.compositeFolder.sgFolder.msgDatabase;
+    let db = this.baseFolder.msgDatabase;
     let existingMsg = db.getMsgHdrForMessageID(aJsItem.id_str);
     if (existingMsg)
     {
@@ -175,7 +240,7 @@ TwitterFolderOverride.prototype =
     if (this.mNeedFolderLoadedEvent)
     {
       dump("sending FolderLoaded event\n");
-      this.compositeFolder.sgFolder.NotifyFolderEvent(gFolderLoadedAtom);
+      this.baseFolder.NotifyFolderEvent(gFolderLoadedAtom);
       this.mNeedFolderLoadedEvent = false;
     }
     else
@@ -187,32 +252,18 @@ TwitterFolderOverride.prototype =
 function FolderListener(aFolder)
 {
   dump("new FolderListener for aFolder " + aFolder + "\n");
-  this.compositeFolder = aFolder;
+  this.baseFolder = aFolder;
 }
 
 FolderListener.prototype =
 {
-  callback: function __callback(aTwh, aJson, aContext)
+  callback: function __callback(aTwh, aJson, jsFolder)
   {
-    //dump("FolderListener regular callback aContext <" + aContext + ">\n");
-    let folder = aContext;
-    //dump("FolderListener.callback for folder " + folder.sgFolder.name + "\n");
-    /*
-    for (name in aJson)
-    {
-      dump(name + ":(" + typeof(aJson[name]) + ") ");
-      if (typeof(aJson[name]) == "object")
-      {
-        for (name1 in aJson[name])
-          dump("\n" + name1 + ": " + aJson[name][name1]);
-      }
-      else
-        dump(aJson[name]);
-      dump("\n");
-    }
-    */
-    folder.jsFolder.reconcileFolder(aJson);
-    folder.jsFolder.notifyFolderLoaded();
+    jsFolder.reconcileFolder(aJson);
+    jsFolder.notifyFolderLoaded();
   },
-  errorCallback: function _errorCallback() { dump("errorCallback\n");},
+  errorCallback: function _errorCallback(aTwitterHelper, aXmlRequest, aContext)
+  {
+    re('Error twitter callback status is ' + aXmlRequest.status);
+  },
 }

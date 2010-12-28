@@ -49,8 +49,19 @@ Cu.import("resource://tweequilla/twitterHelper.jsm");
 Cu.import("resource://tweequilla/twitterConsumer.jsm");
 Cu.import("resource://tweequilla/oauthTokenMgr.jsm");
 
-function re(e) {
-  dump(e + "\n");
+function re(error)
+{
+  dump('javascript error: ' + error + '\n');
+  let jsFrame = error.stack;
+  if (!jsFrame)
+    jsFrame = Components.stack;
+  while (jsFrame)
+  {
+    dump(jsFrame.toString() + '\n');
+    jsFrame = jsFrame.caller;
+  }
+  Cu.reportError(error);
+  //throw(error);
 }
 
 function dl(t) {
@@ -58,7 +69,7 @@ function dl(t) {
 }
 
 function TwitterIncomingServer()
-{
+{ try {
   let server = Cc["@mesquilla.com/sgincomingserver;1"]
                  .createInstance(Ci.nsIMsgIncomingServer);
   server instanceof Ci.msqISgIncomingServer;
@@ -72,7 +83,7 @@ function TwitterIncomingServer()
   this.__proto__.__proto__ = server;
 
   // define the overrides
-  this.jsServer = new TwitterIncomingServerOverride(this);
+  this.jsServer = new TwitterIncomingServerOverride(server);
   server.jsParent = this.jsServer;
   //server.override("msqSgMailIncomingServerOverridable::UpdateFolder");
 
@@ -80,7 +91,7 @@ function TwitterIncomingServer()
   server.saveLocalStoreType("twitter");
   server.saveAccountManagerChrome("am-serverwithnoidentities.xul");
 
-}
+} catch(e) {re(e);}}
 
 function TwitterIncomingServerOverride(aIncomingServer) {
   // initialization of member variables
@@ -124,9 +135,9 @@ TwitterIncomingServerOverride.prototype =
     dl('Normal twitter callback');
   },
 
-  errorCallback: function _errorCallback()
+  errorCallback: function _errorCallback(aTwitterHelper, aXmlRequest, aContext)
   {
-    dl('Error twitter callback');
+    re('Error twitter callback status is ' + aXmlRequest.status);
   },
   
 }

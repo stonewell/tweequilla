@@ -283,7 +283,6 @@ function statuses_friends_timeline(aCallback, aErrorCallback, aContext, aFormat,
   feedURL = this._self._addParamToQueryURL(feedURL, aSince, aSinceId, "since_id");
   feedURL = this._self._addParamToQueryURL(feedURL, aSince || aSinceId, aCount, "count");
   feedURL = this._self._addParamToQueryURL(feedURL, aSince || aSinceId || aCount, aPage, "page");
-
   this._self._sendRequest(feedURL, aCallback, aErrorCallback, true, aContext);
 }
 

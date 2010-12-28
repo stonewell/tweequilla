@@ -80,7 +80,7 @@ function TwitterService()
   this.__proto__.__proto__ = service;
 
   // define the overrides
-  this.jsService = new TwitterServiceOverride(this);
+  this.jsService = new TwitterServiceOverride(service);
   service.jsParent = this.jsService;
   service.override("msqSgServiceOverridable::DisplayMessage");
 
@@ -89,7 +89,7 @@ function TwitterService()
 function TwitterServiceOverride(aService) {
   this.wrappedJSObject = this;
   // initialization of member variables
-  this.composite = aService;
+  this.baseService = aService;
 }
 
 TwitterServiceOverride.prototype = 
@@ -114,7 +114,7 @@ TwitterServiceOverride.prototype =
                     .createInstance(Ci.nsIChannel);
     //dl("Channel is " + channel);
     // make a url object
-    let iSgService = this.composite.base.QueryInterface(Ci.msqISgService);
+    let iSgService = this.baseService.base.QueryInterface(Ci.msqISgService);
     let url = iSgService.prepareUrl(aMessageURI, aUrlListener, aMsgWindow);
     //dl("url spec is " + url.spec);
     iSgService.fetchMessageUrl(url, aDisplayConsumer, aMsgWindow, aUrlListener);

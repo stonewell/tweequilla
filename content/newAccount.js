@@ -110,38 +110,6 @@ function finishAccount(account, accountData)
     account.incomingServer.valid = true;
     // hack to cause an account loaded notification now the server is valid
     account.incomingServer = account.incomingServer;
-
-    // add at least one subfolder
-    let rootMsgFolder = account.incomingServer.rootFolder
-                               .QueryInterface(Ci.nsIMsgFolder);
-
-    // We use internal names known to everyone like Sent, Templates and Drafts
-    let sentFolder = "Sent Items";
-
-    let sentMsgFolder;
-    try {
-      sentMsgFolder = rootMsgFolder.getChildNamed(sentFolder);
-    } 
-    catch (e)
-    {
-      sentMsgFolder = rootMsgFolder.addSubfolder(sentFolder);
-      sentMsgFolder.setStringProperty("TwitterAction", "UserTimeline");
-      let action = sentMsgFolder.getStringProperty("TwitterAction");
-      dump("\n\nCreate action " + action + "\n");
-    }
-    sentMsgFolder.setFlag(Ci.nsMsgFolderFlags.SentMail);
-
-    let timelineFolder = "Timeline";
-    let timelineMsgFolder;
-    try 
-    {
-      timelineMsgFolder = rootMsgFolder.getChildNamed(timelineFolder);
-    }
-    catch(e)
-    {
-        timelineMsgFolder = rootMsgFolder.addSubfolder(timelineFolder);
-        timelineMsgFolder.setStringProperty("TwitterAction", "FriendsTimeline");
-    }
   }
 
 } catch (e) {dump("finishAccount: " + e + "\n");}}

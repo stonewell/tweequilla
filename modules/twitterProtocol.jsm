@@ -73,7 +73,7 @@ function TwitterProtocol()
   this.__proto__.__proto__ = protocol;
 
   // define the overrides
-  this.jsProtocol = new TwitterProtocolOverride(this);
+  this.jsProtocol = new TwitterProtocolOverride(protocol);
   protocol.jsParent = this.jsProtocol;
   protocol.override("msqSgProtocolOverridable::AsyncOpen");
   //protocol.override("msqSgProtocol::OnEndMsgHeaders");

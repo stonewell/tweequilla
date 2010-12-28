@@ -66,7 +66,7 @@ function TwitterUrl()
   this.__proto__.__proto__ = url;
 
   // define the overrides
-  this.jsUrl = new TwitterUrlOverride(this);
+  this.jsUrl = new TwitterUrlOverride(url);
   url.jsParent = this.jsUrl;
   //url.override("msqSgServiceOverridable::DisplayMessage");
 
@@ -75,7 +75,7 @@ function TwitterUrl()
 function TwitterUrlOverride(aUrl) {
   this.wrappedJSObject = this;
   // initialization of member variables
-  this.compositeUrl = aUrl;
+  this.baseUrl = aUrl;
 }
 
 TwitterUrlOverride.prototype = 

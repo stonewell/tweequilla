@@ -34,7 +34,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
- 
+
 var tweequilla = (function _tweequilla() {
 
   const Cc = Components.classes;
@@ -50,10 +50,13 @@ var tweequilla = (function _tweequilla() {
                             .getService(Ci.nsIObserverService);
     observerService.addObserver(tweequilla, "MsgMsgDisplayed", false);
     setToolbarAccounts();
+    //dl("Registering tweequilla in FolderDisplayListenerManager");
+    //FolderDisplayListenerManager.registerListener(tweequilla);
   }
 
   function onUnload() {
     // remove observer to catch message display
+    //FolderDisplayListenerManager.unregisterListener(tweequilla);
     let observerService = Cc["@mozilla.org/observer-service;1"]
                             .getService(Ci.nsIObserverService);
     observerService.removeObserver(tweequilla, "MsgMsgDisplayed");
@@ -173,6 +176,13 @@ var tweequilla = (function _tweequilla() {
     }
   }
 
+  /* FolderDisplayListener
+  function onMakeActive(aFolderDisplay)
+  {
+    dl("\n\nonMakeActive for folder " + aFolderDisplay.view.displayedFolder.name);
+  }
+  */
+
   // publically accessible items
   let pub = {};
   pub.onLoad = onLoad;
@@ -182,6 +192,7 @@ var tweequilla = (function _tweequilla() {
   pub.observe = observe;
   pub.statusKeypress = statusKeypress;
   pub.selectMenuitem = selectMenuitem;
+  //pub.onMakeActive = onMakeActive;
 
   return pub;
 })();
