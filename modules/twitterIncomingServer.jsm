@@ -85,7 +85,9 @@ function TwitterIncomingServer()
   // define the overrides
   this.jsServer = new TwitterIncomingServerOverride(server);
   server.jsParent = this.jsServer;
-  //server.override("msqSgMailIncomingServerOverridable::UpdateFolder");
+  server.override("msqSgIncomingServerOverridable::GetNewMessages");
+  server.override("msqSgIncomingServerOverridable::PerformBiff");
+  server.override("msqSgIncomingServerOverridable::GetServerRequiresPasswordForBiff");
 
   // initializations
   server.saveLocalStoreType("twitter");
@@ -104,14 +106,43 @@ TwitterIncomingServerOverride.prototype =
   QueryInterface:   XPCOMUtils.generateQI([Ci.nsIMsgIncomingServer]),
 
   // **** nsIMsgIncomingServer overrides
+  getNewMessages: function _getNewMessages(aFolder, aMsgWindow, aUrlListener)
+  { try {
+    dl('getNewMessages for folder ' + aFolder.name);
+    let subfolders = Cc["@mozilla.org/supports-array;1"]
+                       .createInstance(Ci.nsISupportsArray);
+    aFolder.ListDescendents(subfolders);
+    dl('found ' + subfolders.Count() + ' descendents');
+    for (let index = 0; index < subfolders.Count(); index++)
+    {
+      let folder = subfolders.QueryElementAt(index, Ci.nsIMsgFolder);
+      if (folder.getFlag(Ci.nsMsgFolderFlags.CheckNew))
+      {
+        dl('need to update folder ' + folder.name);
+        folder.updateFolder(aMsgWindow);
+      }
+    }
+  } catch(e) {re(e);}},
+
+  performBiff: function _performBiff(aMsgWindow)
+  { try {
+    dl('performBiff');
+    let server = this.baseServer;
+    server.getNewMessages(server.rootMsgFolder, aMsgWindow, null);
+  } catch(e) {re(e);}},
+
+  get serverRequiresPasswordForBiff()
+  {
+    return false;
+  },
 
   // **** local methods
   sendStatusUpdate: function _sendStatusUpdate(text)
   {
-    this.serverHelper().statuses.update(this.normalCallback, this.errorCallback, null, 'json', text);
+    this.serverHelper.statuses.update(this.normalCallback, this.errorCallback, null, 'json', text);
   },
 
-  serverHelper: function _serverHelper()
+  get serverHelper()
   {
     if (gTwitterHelper)
       return gTwitterHelper;
@@ -119,11 +150,8 @@ TwitterIncomingServerOverride.prototype =
     // get the authorization token and secret
     let server = this.baseServer;
     let token = server.getUnicharValue("accessToken");
-    //dump("token is " + token + "\n");
-    //dump("username is " + server.username + "\n");
     let pwdMgr = new oauthTokenMgr("tweequilla", server.username);
     let secret = pwdMgr.retrieve();
-    //dump("secret is " + secret + "\n");
     twitterConsumer.accessToken = token;
     twitterConsumer.accessTokenSecret = secret;
     let gTwitterHelper = new TwitterHelper(twitterConsumer, null, "twitter");

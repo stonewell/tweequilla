@@ -118,17 +118,9 @@ TwitterFolderOverride.prototype =
   { try {
     let server = this.baseFolder.server;
     this.mNeedFolderLoadedEvent = true;
-    let twitterConsumer = new TwitterConsumer();
-    // get the authorization token and secret
-    let token = server.getUnicharValue("accessToken");
-    //dump("token is " + token + "\n");
-    //dump("username is " + server.username + "\n");
-    let pwdMgr = new oauthTokenMgr("tweequilla", server.username);
-    let secret = pwdMgr.retrieve();
-    //dump("secret is " + secret + "\n");
-    twitterConsumer.accessToken = token;
-    twitterConsumer.accessTokenSecret = secret;
-    let twh = new TwitterHelper(twitterConsumer, null, "twitter");
+    server instanceof Ci.msqIOverride;
+    let twh = server.jsParent.wrappedJSObject.serverHelper;
+
     // todo: use the context only to pass context, not a new FolderListener instance?
     let listener = new FolderListener(this.baseFolder);
 
@@ -176,12 +168,14 @@ TwitterFolderOverride.prototype =
     function makeFolder(aName, aTwitterAction)
     {
       let msgFolder;
-      try {
+      try 
+      {
         msgFolder = aRootMsgFolder.getChildNamed(aName);
       } 
       catch (e)
       {
         msgFolder = aRootMsgFolder.addSubfolder(aName);
+        msgFolder.setFlag(Ci.nsMsgFolderFlags.CheckNew);
       }
       msgFolder.setStringProperty("TwitterAction", aTwitterAction);
       return msgFolder;
@@ -204,7 +198,6 @@ TwitterFolderOverride.prototype =
 
   reconcileItem: function _reconcileItem(aJsItem)
   { try {
-    dump("reconcile item:\n");
     /*
     for (name1 in aJsItem)
     {
@@ -214,13 +207,12 @@ TwitterFolderOverride.prototype =
          dump(name1 + "." + name2 + ": " + aJsItem[name1][name2] + "\n");
     }
     */
-    dump("twitter status text: " + aJsItem.text + "\n");
     // add to database if needed
     let db = this.baseFolder.msgDatabase;
     let existingMsg = db.getMsgHdrForMessageID(aJsItem.id_str);
     if (existingMsg)
     {
-      dump("found existing message, subject is " + existingMsg.subject + "\n");
+      //dump("found existing message, subject is " + existingMsg.subject + "\n");
       return;
     }
     // add new hdr to the database
@@ -242,19 +234,15 @@ TwitterFolderOverride.prototype =
   { try {
     if (this.mNeedFolderLoadedEvent)
     {
-      dump("sending FolderLoaded event\n");
       this.baseFolder.NotifyFolderEvent(gFolderLoadedAtom);
       this.mNeedFolderLoadedEvent = false;
     }
-    else
-      dump("FolderLoaded not needed\n");
   } catch(e) {re(e);}},
 
 }
 
 function FolderListener(aFolder)
 {
-  dump("new FolderListener for aFolder " + aFolder + "\n");
   this.baseFolder = aFolder;
 }
 

@@ -35,26 +35,75 @@
    -
    - ***** END LICENSE BLOCK ***** -->
 
+
 <?xml-stylesheet href="chrome://messenger/skin/accountManage.css" type="text/css"?>
 <?xml-stylesheet href="chrome://messenger/skin/messenger.css" type="text/css"?>
 <?xml-stylesheet href="chrome://messenger/skin/folderMenus.css" type="text/css"?>
-<?xul-overlay href="chrome://tweequilla/content/twitterserver.xul"?>
 
 <!DOCTYPE page [
 <!ENTITY % trashDTD SYSTEM "chrome://messenger/locale/am-server-top.dtd">%trashDTD;
-<!ENTITY % extensionDTD SYSTEM "chrome://tweequilla/locale/extension.dtd"> %extensionDTD;
+<!ENTITY % pickerDTD SYSTEM "chrome://messenger/locale/msgFolderPickerOverlay.dtd"> %pickerDTD;
+<!ENTITY % amEwsDTD SYSTEM "chrome://tweequilla/locale/am-twitterserver.dtd"> %amEwsDTD;
 ]>
 
 <page xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-      title="&TwitterAuthorization;"
+      title="&serverSettings.label;"
       onload="parent.onPanelLoaded('am-twitterserver.xul');">
-  <script type="application/javascript">
-    // glue to account manager
-    function onSave() {
-      tweequilla.twitterserver.onSave();
-    }
-  </script>
 
-  <dialogheader title="&TwitterAuthorization;"/>
-  <vbox id="twitterOverlay"/>
+  <script type="application/javascript" src="chrome://messenger/content/AccountManager.js"/>
+  <script type="application/javascript" src="chrome://tweequilla/content/am-twitterserver.js"/>
+  <script type="application/javascript" src="chrome://messenger/content/am-prefs.js"/>
+  <script type="application/javascript" src="chrome://messenger/content/amUtils.js"/>
+  <script type="application/javascript" src="chrome://messenger/content/widgetglue.js"/>
+  <stringbundle id="bundle_messenger" src="chrome://messenger/locale/messenger.properties"/>
+
+  <label hidden="true" wsm_persist="true" id="server.type"/>
+
+  <dialogheader title="&serverSettings.label;"/>
+
+  <grid>
+    <columns>
+      <column/>
+      <column flex="4"/>
+    </columns>
+    <rows>      
+      <row align="center">
+            <label value="&userName.label;"
+                   accesskey="&userName.accesskey;"
+                   control="server.realUsername"/>
+            <textbox wsm_persist="true" id="server.realUsername" readonly="true"
+                     prefstring="mail.server.%serverkey%.realusername"/>
+      </row>
+    </rows>
+  </grid>
+
+  <separator class="thin"/>
+
+  <groupbox>
+    <caption label="&serverSettings.label;"/>
+    <vbox align="start">
+    <checkbox wsm_persist="true"
+              id="server.loginAtStartUp" 
+              label="&loginAtStartup.label;"
+              accesskey="&loginAtStartup.accesskey;"
+              prefattribute="value"
+              prefstring="mail.server.%serverkey%.login_at_startup"/>
+    </vbox>
+    <hbox align="center">
+      <checkbox wsm_persist="true" id="server.doBiff" label="&biffStart.label;"
+                accesskey="&biffStart.accesskey;"
+                oncommand="onCheckItem('server.biffMinutes', 'server.doBiff');"
+                prefattribute="value"
+                prefstring="mail.server.%serverkey%.check_new_mail"/>
+      <textbox wsm_persist="true" id="server.biffMinutes" size="3"
+               aria-labelledby="server.doBiff server.biffMinutes biffEnd"
+               preftype="int" type="number"
+               onchange="onBiffMinChange(this.value);"
+               prefstring="mail.server.%serverkey%.check_time"/>
+      <label id="biffEnd" control="server.biffMinutes" value="&biffEnd.label;"/>
+    </hbox>
+
+  </groupbox>
+
+  <separator class="thin"/>
 </page>

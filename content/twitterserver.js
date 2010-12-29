@@ -81,11 +81,13 @@ tweequilla.twitterserver = function _twitterserver() {
         //consumer is complete, save the accesstoken and secret
         var prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch);
         document.getElementById("server.realUsername").value = screen_name;
-        var pwdMgr = new oauthTokenMgr("tweequilla", screen_name);
-        pwdMgr.store(consumer.accessToken, consumer.accessTokenSecret);
-        document.getElementById("server.accessToken").value = consumer.accessToken;
         dump("accessToken is " + consumer.accessToken + "\n");
         dump("accessTokenSecret is " + consumer.accessTokenSecret + "\n");
+        dump("screen_name is " + screen_name + "\n");
+        dump("storing in pwdMgr\n");
+        var pwdMgr = new oauthTokenMgr("tweequilla", screen_name);
+        pwdMgr.store(consumer.accessTokenSecret);
+        document.getElementById("server.accessToken").value = consumer.accessToken;
         document.getElementById("dummy.accessTokenSecret").value = consumer.accessTokenSecret;
         alert("Twitter Registration Succeeded");
       }
