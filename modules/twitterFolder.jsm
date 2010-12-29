@@ -225,6 +225,9 @@ TwitterFolderOverride.prototype =
     newMessage.date = 1000 * Date.parse(aJsItem.created_at);
     newMessage.author = "@" + aJsItem.user.screen_name;
     newMessage.setUint32Property("notAPhishMessage", 1);
+    let inReplyTo = aJsItem.in_reply_to_status_id_str;
+    if (inReplyTo && inReplyTo.length)
+      newMessage.setReferences(inReplyTo);
     dump("\nAdding new message with subject <" + newMessage.subject + "> key " + nextKey + "\n");
     db.AddNewHdrToDB(newMessage, true);
     return;

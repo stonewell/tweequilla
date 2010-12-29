@@ -140,6 +140,24 @@ function _onreadystatechangeTwitter(aXmlRequest, aCallback, aErrorCallback, aCon
                 .alert(null, aTwitterHelper.mServiceName, "Cannot parse JSON answer");
               return;
             }
+            /*
+            function showObject(aObject)
+            {
+              if ( aObject && ((typeof aObject) == "object"))
+              {
+                dump("{ ");
+                for (name in aObject)
+                {
+                  dump(name + ": ");
+                  showObject(aObject[name]);
+                }
+                dump("}\n");
+              }
+              else
+                dump(aObject + ",\n");
+            }
+            showObject(responseJSON);
+            */
             aCallback(aTwitterHelper, responseJSON, aContext);
           }
         }
