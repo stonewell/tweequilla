@@ -151,8 +151,18 @@ TwitterProtocolOverride.prototype =
       fakeHeaders += name + ": " + value + "\r\n";
     }
     addHeader("MIME-Version", "1.0");
-    addHeader("Subject", msgHdr.subject);
     addHeader("From", msgHdr.author);
+
+    // We'll detect links, and separate those from the subject shown in the header pane
+    let linkRex = /http:\/\/[=a-zA-Z0-9\.\-\/\?]+/;
+    let subject = msgHdr.subject;
+    let link = msgHdr.subject.match(linkRex);
+    if (link && link.length)
+    {
+      addHeader("content-base", link);
+      subject = subject.replace(linkRex, "");
+    }
+    addHeader("Subject", subject);
 
     // add the body and the body separator
     fakeHeaders += "\r\n";
