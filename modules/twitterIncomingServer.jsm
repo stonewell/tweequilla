@@ -137,9 +137,30 @@ TwitterIncomingServerOverride.prototype =
   },
 
   // **** local methods
-  sendStatusUpdate: function _sendStatusUpdate(text)
+  
+  /**
+   * Send a tweet (status, reply, or retweet)
+   *
+   * aText (string): the text of the tweet
+   * aType (string): the type of tweet
+   *                   null or "status" : simple status update
+   *                   "reply"          : reply to existing tweet
+   *                   "retweet"        : retweet of existing tweet
+   * aInReplyTo    : for reply or retweet, the status id of the original tweet
+   */
+  sendStatusUpdate: function _sendStatusUpdate(aText, aType, aInReplyTo)
   {
-    this.serverHelper.statuses.update(this.normalCallback, this.errorCallback, null, 'json', text);
+    if (!aType || aType == "status")
+      return this.serverHelper.statuses.update
+        (this.normalCallback, this.errorCallback, null, 'json', aText);
+    if (aType == "reply")
+      return this.serverHelper.statuses.update
+        (this.normalCallback, this.errorCallback, null, 'json', aText, aInReplyTo);
+    if (aType == "retweet")
+      return this.serverHelper.statuses.retweet 
+        (this.normalCallback, this.errorCallback, null, 'json', aInReplyTo);
+    else
+      throw "Unknown status update type";
   },
 
   get serverHelper()
@@ -166,6 +187,41 @@ TwitterIncomingServerOverride.prototype =
   errorCallback: function _errorCallback(aTwitterHelper, aXmlRequest, aContext)
   {
     re('Error twitter callback status is ' + aXmlRequest.status);
+    dl(aXmlRequest.responseText);
   },
   
+}
+
+// json pretty print from http://stackoverflow.com/questions/130404/javascript-data-formatting-pretty-printer
+function dumpObjectIndented(obj, indent)
+{
+  var result = "";
+  if (indent == null) indent = "";
+
+  for (var property in obj)
+  {
+    var value = obj[property];
+    if (typeof value == 'string')
+      value = "'" + value + "'";
+    else if (typeof value == 'object')
+    {
+      if (value instanceof Array)
+      {
+        // Just let JS convert the Array to a string!
+        value = "[ " + value + " ]";
+      }
+      else
+      {
+        // Recursive dump
+        // (replace "  " by "\t" or something else if you prefer)
+        var od = DumpObjectIndented(value, indent + "  ");
+        // If you like { on the same line as the key
+        //value = "{\n" + od + "\n" + indent + "}";
+        // If you prefer { and } to be aligned
+        value = "\n" + indent + "{\n" + od + "\n" + indent + "}";
+      }
+    }
+    result += indent + "'" + property + "' : " + value + ",\n";
+  }
+  return result.replace(/,\n$/, "");
 }

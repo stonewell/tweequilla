@@ -176,6 +176,38 @@ var tweequilla = (function _tweequilla() {
     }
   }
 
+  // wrap function composeMsgByType so that we can do Twitter-specific messages
+  let composeMsgByType_original = composeMsgByType;
+  composeMsgByType = function _composeMsgByType(aCompType, aEvent)
+  {
+    let msgFolder;
+    try {
+      msgFolder = GetFirstSelectedMsgFolder();
+    } catch (e) {}
+
+    if (!(msgFolder && msgFolder.server.type == "twitter"))
+      return composeMsgByType_original(aCompType, aEvent);
+
+    let hdr;
+    try {
+      hdr = gDBView.hdrForFirstSelectedMessage;
+    } catch(e) {}
+
+    let composeWindow = window.openDialog("chrome://tweequilla/content/twitterCompose.xul", "_blank",
+        "chrome,menubar,resizable=yes,scrollbars=no,status=no",
+        hdr, aCompType);
+  }
+
+  // make sure that we have the retweeter header in mailnews.headers.extraExpandedHeaders
+  let prefBranch = Cc["@mozilla.org/preferences-service;1"]
+                     .getService(Ci.nsIPrefBranch);
+  let expandedHeaders = prefBranch.getCharPref("mailnews.headers.extraExpandedHeaders");
+  if (expandedHeaders.indexOf("retweet") == -1)
+  {
+    expandedHeaders = "retweet " + expandedHeaders;
+    prefBranch.setCharPref("mailnews.headers.extraExpandedHeaders", expandedHeaders);
+  }
+
   /* FolderDisplayListener
   function onMakeActive(aFolderDisplay)
   {

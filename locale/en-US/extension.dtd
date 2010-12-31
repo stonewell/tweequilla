@@ -9,3 +9,5 @@
 <!ENTITY clickhere3 "Click Here after entering PIN">
 <!ENTITY whenset "Set during Twitter authorization">
 <!ENTITY TwitterAuthorization "Twitter Authorization">
+<!ENTITY TwitterCompose "Twitter Message Compose">
+<!ENTITY tweequilla.SendAndClose "Send &amp; Close">

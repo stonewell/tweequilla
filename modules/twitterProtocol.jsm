@@ -61,7 +61,7 @@ function dl(t) {
 
 function TwitterProtocol()
 { try {
-  dl("TwitterProtocol");
+  //dl("TwitterProtocol");
   let protocol = Cc["@mesquilla.com/sgprotocol;1"]
               .createInstance(Ci.nsIChannel);
   protocol instanceof Ci.nsIRequest;
@@ -87,7 +87,7 @@ function TwitterProtocolOverride(aProtocol) {
   this.compositeProtocol = aProtocol;
   this.mChannelContext = null;
   this.mHeaderSink = null;
-  dl("new TwitterProtocolOverride, protocol is " + aProtocol);
+  //dl("new TwitterProtocolOverride, protocol is " + aProtocol);
 }
 
 TwitterProtocolOverride.prototype = 
@@ -97,7 +97,7 @@ TwitterProtocolOverride.prototype =
   // nsIChannel overrides
   asyncOpen: function _asyncOpen(aStreamListener, aContext)
   {
-    dl("TwitterProtocolOverride.asyncOpen");
+    //dl("TwitterProtocolOverride.asyncOpen");
     this.mChannelContext = aContext;
 
     // We'll just push out the subject as the body for now
@@ -108,7 +108,7 @@ TwitterProtocolOverride.prototype =
     try {
       mimeStreamConverterListener = aStreamListener.QueryInterface(Ci.nsIMimeStreamConverter);
     } catch (e) {}
-    dl("mimeStreamConverter is " + mimeStreamConverterListener);
+    //dl("mimeStreamConverter is " + mimeStreamConverterListener);
 
     if (!mimeStreamConverterListener)
     {
@@ -125,19 +125,19 @@ TwitterProtocolOverride.prototype =
   // nsIMsgHeaderSink overrides
   onEndMsgHeaders: function _onEndMsgHeaders(aUrl)
   {
-    dl("TwitterProtocolOverride.onEndMsgHeaders");
+    //dl("TwitterProtocolOverride.onEndMsgHeaders");
     this.compositeProtocol.onEndMsgHeaders(aUrl);
   },
  
    // local functions
   onBody: function _onBody()
   { try {
-    dl("TwitterProtocolOverride.onBody");
+    //dl("TwitterProtocolOverride.onBody");
     let protocol = this.compositeProtocol;
     let uri = protocol.URI;
     uri instanceof Ci.nsIMsgMessageUrl;
     let msgHdr = uri.messageHeader;
-    dl("subject is " + msgHdr.subject);
+    //dl("subject is " + msgHdr.subject);
     // we need to locate the message header
     let pipe = Cc["@mozilla.org/pipe;1"].createInstance(Ci.nsIPipe);
     pipe.init(false, false, 0, 0xffffffff, null);
@@ -156,13 +156,16 @@ TwitterProtocolOverride.prototype =
     // We'll detect links, and separate those from the subject shown in the header pane
     let linkRex = /http:\/\/[=a-zA-Z0-9\.\-\/\?]+/;
     let subject = msgHdr.subject;
+    let retweet = msgHdr.getProperty("retweet");
     let link = msgHdr.subject.match(linkRex);
     if (link && link.length)
     {
       addHeader("content-base", link);
       subject = subject.replace(linkRex, "");
     }
-    addHeader("Subject", subject);
+    addHeader("subject", subject);
+    if (retweet && retweet.length)
+      addHeader("retweet", retweet);
 
     // add the body and the body separator
     fakeHeaders += "\r\n";

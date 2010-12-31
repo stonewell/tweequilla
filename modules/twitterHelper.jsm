@@ -157,7 +157,7 @@ function _onreadystatechangeTwitter(aXmlRequest, aCallback, aErrorCallback, aCon
                 dump(aObject + ",\n");
             }
             showObject(responseJSON);
-            */
+            /**/
             aCallback(aTwitterHelper, responseJSON, aContext);
           }
         }
@@ -341,6 +341,14 @@ function statuses_retweeted_by_me(aCallback, aErrorCallback, aContext, aFormat, 
   this._self._sendRequest(feedURL, aCallback, aErrorCallback, true, aContext);
 }
 
+TwitterHelper.prototype.statuses.retweet  = 
+function statuses_retweet(aCallback, aErrorCallback, aContext, aFormat, aStatusId)
+{
+  var feedURL = this._self.mBaseURL + "statuses/retweet/" + aStatusId + "." + aFormat;
+
+  this._self._sendPostRequest(feedURL, aCallback, aErrorCallback, true, aContext);
+}
+
 TwitterHelper.prototype.statuses.user_timeline  = 
 function statuses_user_timeline(aCallback, aErrorCallback, aContext, aFormat, aUserId, aSince, aSinceId, aCount, aPage)
 {
@@ -452,7 +460,7 @@ function statuses_public_timeline(aCallback, aErrorCallback, aContext, aFormat)
 }
 
 TwitterHelper.prototype.statuses.update  = 
-function statuses_update(aCallback, aErrorCallback, aContext, aFormat, aText, aInReplyToStatusId, aSource)
+function statuses_update(aCallback, aErrorCallback, aContext, aFormat, aText, aInReplyToStatusId)
 {
   if (!aText)
   {
@@ -463,7 +471,6 @@ function statuses_update(aCallback, aErrorCallback, aContext, aFormat, aText, aI
   var feedURL = this._self.mBaseURL + "statuses/update." + aFormat;
   feedURL += "?status=" + escape(aText);
   feedURL = this._self._addParamToQueryURL(feedURL, true, aInReplyToStatusId, "in_reply_to_status_id");
-  feedURL = this._self._addParamToQueryURL(feedURL, true, aSource, "source");
 
   this._self._sendPostRequest(feedURL, aCallback, aErrorCallback, true, aContext);
 }

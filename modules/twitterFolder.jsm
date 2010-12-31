@@ -220,11 +220,24 @@ TwitterFolderOverride.prototype =
     let nextKey = fi.highWater + 1;
     let newMessage = db.CreateNewHdr(nextKey);
     fi.highWater = nextKey;
-    newMessage.subject = aJsItem.text;
-    newMessage.messageId = aJsItem.id_str;
+
+    // For retweets, we will use the original message, but keep a retweet
+    //  field with the screen name of the retweeter, and keep the date
+    //  of the retweet
+
     newMessage.date = 1000 * Date.parse(aJsItem.created_at);
+    newMessage.messageId = aJsItem.id_str;
+
+    if (aJsItem.retweeted_status)
+    {
+      newMessage.setProperty("retweet", "@" + aJsItem.user.screen_name);
+      aJsItem = aJsItem.retweeted_status;
+    }
+
     newMessage.author = "@" + aJsItem.user.screen_name;
     newMessage.setUint32Property("notAPhishMessage", 1);
+    newMessage.subject = aJsItem.text;
+
     let inReplyTo = aJsItem.in_reply_to_status_id_str;
     if (inReplyTo && inReplyTo.length)
       newMessage.setReferences(inReplyTo);
