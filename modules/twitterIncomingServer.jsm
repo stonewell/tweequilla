@@ -87,6 +87,7 @@ function TwitterIncomingServer()
   server.jsParent = this.jsServer;
   server.override("msqSgIncomingServerOverridable::GetNewMessages");
   server.override("msqSgIncomingServerOverridable::PerformBiff");
+  server.override("msqSgIncomingServerOverridable::GetLocalPath");
   server.override("msqSgIncomingServerOverridable::GetServerRequiresPasswordForBiff");
 
   // initializations
@@ -135,6 +136,42 @@ TwitterIncomingServerOverride.prototype =
   {
     return false;
   },
+
+  get localPath()
+  { try {
+    let server = this.baseServer;
+
+    let serverPath;
+    try {
+      serverPath = server.getFileValue("directory-rel", "directory");
+    } catch (e) {}
+    if (serverPath)
+      return serverPath;
+
+    let protocolInfo = Cc["@mozilla.org/messenger/protocol/info;1?type=" + server.type]
+                         .getService(Ci.nsIMsgProtocolInfo);
+    let defaultLocalPath = protocolInfo.defaultLocalPath;
+    // Create if needed. Normal error is file exists
+    try {
+      defaultLocalPath.create(Ci.nsIFile.DIRECTORY_TYPE, 0755);
+    } catch(e) {}
+    if (!defaultLocalPath.exists())
+      throw "Local path for twitter account could not be created";
+
+    serverPath = defaultLocalPath.clone();
+    serverPath.append(server.realUsername + '@' + server.hostName);
+    // Create if missing. Normal error is directory exists, which implies that
+    //  we are recreating a twitter account, and will then use the old account
+    //  directory.
+    try {
+      serverPath.create(Ci.nsIFile.DIRECTORY_TYPE, 0755);
+    } catch (e) {}
+    if (!serverPath.exists())
+      throw ('could not create account path for twitter account');
+
+    server.localPath = serverPath;
+    return serverPath;
+  }  catch(e) {re(e);}},
 
   // **** local methods
   

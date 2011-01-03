@@ -77,6 +77,7 @@ function TwitterHelper(consumer, aThrobber, aServiceStr)
   this.notifications._self = this;
   this.blocks._self = this;
   this.help._self = this;
+  this.lists._self = this;
 }
 
 /* PRIVATE */
@@ -289,6 +290,7 @@ TwitterHelper.prototype.favorites       = { };
 TwitterHelper.prototype.notifications   = { };
 TwitterHelper.prototype.blocks          = { };
 TwitterHelper.prototype.help            = { };
+TwitterHelper.prototype.lists           = { };
 
 /* STATUSES REQUESTS */
 
@@ -834,6 +836,28 @@ function help_test(aCallback, aErrorCallback, aContext, aFormat)
 {
   var feedURL = this._self.mBaseURL + "help/test." + aFormat;
 
+  this._self._sendRequest(feedURL, aCallback, aErrorCallback, true, aContext);
+}
+
+/* LIST REQUESTS */
+
+TwitterHelper.prototype.lists.get =
+function lists_get(aCallback, aErrorCallback, aContext, aFormat, aUser)
+{
+//http://api.twitter.com/version/:user/lists.format
+  let feedURL = this._self.mBaseURL + aUser + "/lists." + aFormat;
+  this._self._sendRequest(feedURL, aCallback, aErrorCallback, true, aContext);
+}
+
+TwitterHelper.prototype.lists.timeline  = 
+function lists_timeline(aCallback, aErrorCallback, aContext, aFormat, aUser, aListId, aSinceId, aCount, aPage)
+{
+  // http://api.twitter.com/version/:user/lists/:id/statuses.format
+  var feedURL = this._self.mBaseURL + aUser + "/lists/" + aListId + "/statuses." + aFormat;
+
+  feedURL = this._self._addParamToQueryURL(feedURL, false, aSinceId, "since_id");
+  feedURL = this._self._addParamToQueryURL(feedURL, aSinceId, aCount, "per_page");
+  feedURL = this._self._addParamToQueryURL(feedURL, aSinceId || aCount, aPage, "page");
   this._self._sendRequest(feedURL, aCallback, aErrorCallback, true, aContext);
 }
 

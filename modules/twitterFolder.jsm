@@ -141,6 +141,13 @@ TwitterFolderOverride.prototype =
       twh.statuses.retweets_of_me(listener.callback, listener.errorCallback, this, "json");
     else if (action == "RetweetedByMe")
       twh.statuses.retweeted_by_me(listener.callback, listener.errorCallback, this, "json");
+    else if (action == "Lists")
+      twh.lists.get(listener.listsCallback, listener.errorCallback, this, "json", server.username);
+    else if (action == "ListTimeline")
+      twh.lists.timeline(listener.callback, listener.errorCallback, this, "json",
+                         server.username, this.baseFolder.getStringProperty("ListId"), null, 2);
+    else if (action == "Nothing") // mostly for debugging
+      this.notifyFolderLoaded();
     else
       throw("Unrecognized twitter action");
 
@@ -162,8 +169,6 @@ TwitterFolderOverride.prototype =
   // create if needed standard Twitter folders
   makeStandardFolders: function _makeStandardFolders(aRootMsgFolder)
   { try {
-
-    dl('\nmakeStandardFolders');
 
     function makeFolder(aName, aTwitterAction)
     {
@@ -188,6 +193,7 @@ TwitterFolderOverride.prototype =
     makeFolder("Mentions", "Mentions");
     makeFolder("Retweets of me", "RetweetsOfMe");
     makeFolder("Retweeted by me", "RetweetedByMe");
+    makeFolder("My Lists", "Lists");
   } catch (e) {re(e);}},
 
   reconcileFolder: function _reconcileFolder(aJso)
@@ -213,6 +219,8 @@ TwitterFolderOverride.prototype =
     if (existingMsg)
     {
       //dump("found existing message, subject is " + existingMsg.subject + "\n");
+      // update items that might change
+      existingMsg.markFlagged(aJsItem.favorited);
       return;
     }
     // add new hdr to the database
@@ -227,6 +235,7 @@ TwitterFolderOverride.prototype =
 
     newMessage.date = 1000 * Date.parse(aJsItem.created_at);
     newMessage.messageId = aJsItem.id_str;
+    newMessage.markFlagged(aJsItem.favorited);
 
     if (aJsItem.retweeted_status)
     {
@@ -245,6 +254,52 @@ TwitterFolderOverride.prototype =
     db.AddNewHdrToDB(newMessage, true);
     return;
   } catch(e) {re(e)}},
+
+  // aJsLists: the lists json from twitter
+  // aJsFolder: the local js version of the Lists folder (parent to the lists)
+  reconcileLists: function _reconcileLists(aJsLists, aJsFolder)
+  {
+    let skinkFolder = aJsFolder.baseFolder;
+
+    // Get a list of existing subfolders
+    let subfolders = skinkFolder.subfolders;
+    let subfoldersFound = {};
+    while (subfolders && subfolders.hasMoreElements())
+    {
+      let folder = subfolders.getNext()
+                             .QueryInterface(Ci.nsIMsgFolder);
+      subfoldersFound[folder.name] = false;
+    }
+
+    // Find and add if needed the lists
+    for (index in aJsLists)
+    {
+      let name = aJsLists[index].name;
+      let newFolder;
+      try {
+        newFolder = skinkFolder.getChildNamed(name);
+      } catch(e) {
+        newFolder = skinkFolder.addSubfolder(name);
+        newFolder.setFlag(Ci.nsMsgFolderFlags.CheckNew);
+      }
+      newFolder.setStringProperty("TwitterAction", "ListTimeline");
+      newFolder.setStringProperty("ListId", aJsLists[index].id_str);
+      subfoldersFound[name] = true;
+      //dl('Found list ' + name + ' at ' + index);
+    }
+
+    // delete any subfolders that no longer exist
+    for (name in subfoldersFound)
+    {
+      if (!subfoldersFound[name])
+      {
+        try {
+          let folderToDelete = skinkFolder.getChildNamed(name);
+          skinkFolder.propagateDelete(folderToDelete, true, null);
+        } catch(e) {}
+      }
+    }
+  },
 
   notifyFolderLoaded: function _notifyFolderLoaded()
   { try {
@@ -273,4 +328,11 @@ FolderListener.prototype =
   {
     re('Error twitter callback status is ' + aXmlRequest.status);
   },
+  listsCallback: function _listsCallback(aTwh, aJson, jsFolder)
+  {
+    //dl('listsCallback');
+    jsFolder.reconcileLists(aJson.lists, jsFolder);
+    jsFolder.notifyFolderLoaded();
+  },
+
 }

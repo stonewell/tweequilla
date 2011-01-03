@@ -139,6 +139,9 @@ var tweequilla = (function _tweequilla() {
       dl('detected return');
       statusUpdate();
     }
+    // don't allow more than 140 character
+    if (event.charCode &&  event.target.value.length >= 140)
+      event.preventDefault();
   }
 
   function observe(subject, topic, data) {
