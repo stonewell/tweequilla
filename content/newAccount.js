@@ -77,6 +77,11 @@ function onNewAccept()
     let am = Cc["@mozilla.org/messenger/account-manager;1"]
                .getService(Ci.nsIMsgAccountManager);
     let account = am.createAccount();
+
+    // identities make little sense for twitter, but skink UI seems to
+    //  complain if they do not exist
+    let identity = am.createIdentity();
+    account.addIdentity(identity);
     account.incomingServer = am.createIncomingServer(accountData.server.username,
                                                      accountData.server.hostName,
                                                      accountData.server.type);
@@ -107,6 +112,11 @@ function finishAccount(account, accountData)
     let pwdMgr = new oauthTokenMgr("tweequilla", username);
     pwdMgr.store(secret);
 
+    // add what little that we can to the identity
+    let identity = account.identities.Count() ?
+        account.identities.QueryElementAt(0, Ci.nsIMsgIdentity) : null;
+    if (identity)
+      identity.email = "@" + username;
     account.incomingServer.valid = true;
     // hack to cause an account loaded notification now the server is valid
     account.incomingServer = account.incomingServer;
