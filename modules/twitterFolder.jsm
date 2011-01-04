@@ -295,7 +295,8 @@ TwitterFolderOverride.prototype =
       {
         try {
           let folderToDelete = skinkFolder.getChildNamed(name);
-          skinkFolder.propagateDelete(folderToDelete, true, null);
+          if (!folderToDelete.getFlag(Ci.nsMsgFolderFlags.Virtual))
+            skinkFolder.propagateDelete(folderToDelete, true, null);
         } catch(e) {}
       }
     }

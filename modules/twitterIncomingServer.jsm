@@ -89,6 +89,7 @@ function TwitterIncomingServer()
   server.override("msqSgIncomingServerOverridable::PerformBiff");
   server.override("msqSgIncomingServerOverridable::GetLocalPath");
   server.override("msqSgIncomingServerOverridable::GetServerRequiresPasswordForBiff");
+  server.override("msqSgIncomingServerOverridable::GetCanSearchMessages");
 
   // initializations
   server.saveLocalStoreType("twitter");
@@ -172,6 +173,11 @@ TwitterIncomingServerOverride.prototype =
     server.localPath = serverPath;
     return serverPath;
   }  catch(e) {re(e);}},
+
+  get canSearchMessages()
+  {
+    return true;
+  },
 
   // **** local methods
   
