@@ -125,32 +125,33 @@ TwitterFolderOverride.prototype =
     let listener = new FolderListener(this.baseFolder);
 
     // determine the action to take
+    let sinceId = this.baseFolder.getStringProperty("SinceId");
     let action = null;
     try {
       action = this.baseFolder.getStringProperty("TwitterAction");
     } catch(e) {}
     if (action == "UserTimeline")
-      twh.statuses.user_timeline(listener.callback, listener.errorCallback, this, "json");
+      twh.statuses.user_timeline(listener.callback, listener.errorCallback, this, "json", null, sinceId, 100);
     else if (action == "FriendsTimeline")
-      twh.statuses.friends_timeline(listener.callback, listener.errorCallback, this, "json");
+      twh.statuses.friends_timeline(listener.callback, listener.errorCallback, this, "json", sinceId, 100);
     else if (action == "HomeTimeline")
-      twh.statuses.home_timeline(listener.callback, listener.errorCallback, this, "json");
+      twh.statuses.home_timeline(listener.callback, listener.errorCallback, this, "json", sinceId, 100);
     else if (action == "Mentions")
-      twh.statuses.mentions(listener.callback, listener.errorCallback, this, "json");
+      twh.statuses.mentions(listener.callback, listener.errorCallback, this, "json", null, sinceId, 100);
     else if (action == "RetweetsOfMe")
-      twh.statuses.retweets_of_me(listener.callback, listener.errorCallback, this, "json");
+      twh.statuses.retweets_of_me(listener.callback, listener.errorCallback, this, "json", sinceId, 100);
     else if (action == "RetweetedByMe")
-      twh.statuses.retweeted_by_me(listener.callback, listener.errorCallback, this, "json");
+      twh.statuses.retweeted_by_me(listener.callback, listener.errorCallback, this, "json", sinceId, 100);
     else if (action == "Lists")
       twh.lists.get(listener.listsCallback, listener.errorCallback, this, "json", server.username);
     else if (action == "ListTimeline")
       twh.lists.timeline(listener.callback, listener.errorCallback, this, "json",
-                         server.username, this.baseFolder.getStringProperty("ListId"));
+                         server.username, this.baseFolder.getStringProperty("ListId"), sinceId, 100);
     else if (action == "Searches")
       twh.searches.get(listener.searchesCallback, listener.errorCallback, this, "json");
     else if (action == "SearchTimeline")
       twh.searches.timeline(listener.callback, listener.errorCallback, this, "json",
-                         this.baseFolder.getStringProperty("SearchQuery"));
+                         this.baseFolder.getStringProperty("SearchQuery"), sinceId, 100);
     else if (action == "Nothing") // mostly for debugging
       this.notifyFolderLoaded();
     else
@@ -204,6 +205,12 @@ TwitterFolderOverride.prototype =
 
   reconcileFolder: function _reconcileFolder(aJso)
   {
+    let existingSinceId;
+    try {
+      existingSinceId = this.baseFolder.getStringProperty("SinceId");
+    } catch (e) {}
+    existingSinceId = (existingSinceId && existingSinceId.length) ? existingSinceId : "0";
+    let currentSinceId = existingSinceId;
     let items;
     if ('results' in aJso) // this is a search
     {
@@ -211,10 +218,19 @@ TwitterFolderOverride.prototype =
     }
     else
       items = aJso;
-    for (item in items)
-      this.reconcileItem(items[item]);
+    for each (item in items)
+    {
+      let idStr = this.reconcileItem(item);
+      if (idStr && (parseInt(idStr) > parseInt(currentSinceId)))
+        currentSinceId = idStr;
+    }
+    if (parseInt(currentSinceId) > parseInt(existingSinceId))
+    {
+        this.baseFolder.setStringProperty("SinceId", currentSinceId);
+    }
   },
 
+  // returns the item id
   reconcileItem: function _reconcileItem(aJsItem)
   { try {
     /*
@@ -234,7 +250,7 @@ TwitterFolderOverride.prototype =
       //dump("found existing message, subject is " + existingMsg.subject + "\n");
       // update items that might change
       existingMsg.markFlagged(aJsItem.favorited);
-      return;
+      return aJsItem.id_str;
     }
     // add new hdr to the database
     let fi = db.dBFolderInfo;
@@ -268,7 +284,7 @@ TwitterFolderOverride.prototype =
       newMessage.setReferences(inReplyTo);
     dump("\nAdding new message with subject <" + newMessage.mime2DecodedSubject + "> key " + nextKey + "\n");
     db.AddNewHdrToDB(newMessage, true);
-    return;
+    return aJsItem.id_str;
   } catch(e) {re(e)}},
 
   // aJsLists: the lists json from twitter
