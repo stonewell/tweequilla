@@ -78,6 +78,7 @@ function TwitterHelper(consumer, aThrobber, aServiceStr)
   this.blocks._self = this;
   this.help._self = this;
   this.lists._self = this;
+  this.searches._self = this;
 }
 
 /* PRIVATE */
@@ -291,6 +292,7 @@ TwitterHelper.prototype.notifications   = { };
 TwitterHelper.prototype.blocks          = { };
 TwitterHelper.prototype.help            = { };
 TwitterHelper.prototype.lists           = { };
+TwitterHelper.prototype.searches        = { };
 
 /* STATUSES REQUESTS */
 
@@ -309,7 +311,7 @@ function statuses_friends_timeline(aCallback, aErrorCallback, aContext, aFormat,
 TwitterHelper.prototype.statuses.home_timeline  = 
 function statuses_home_timeline(aCallback, aErrorCallback, aContext, aFormat, aSince, aSinceId, aCount, aPage)
 {
-  dump("statuses_home_timeline\n");
+  //dump("statuses_home_timeline\n");
   var feedURL = this._self.mBaseURL + "statuses/home_timeline." + aFormat;
 
   feedURL = this._self._addParamToQueryURL(feedURL, false, aSince, "since");
@@ -858,6 +860,31 @@ function lists_timeline(aCallback, aErrorCallback, aContext, aFormat, aUser, aLi
   feedURL = this._self._addParamToQueryURL(feedURL, false, aSinceId, "since_id");
   feedURL = this._self._addParamToQueryURL(feedURL, aSinceId, aCount, "per_page");
   feedURL = this._self._addParamToQueryURL(feedURL, aSinceId || aCount, aPage, "page");
+  this._self._sendRequest(feedURL, aCallback, aErrorCallback, true, aContext);
+}
+
+/* SEARCH REQUESTS */
+
+TwitterHelper.prototype.searches.get =
+function searches_get(aCallback, aErrorCallback, aContext, aFormat)
+{
+//http://api.twitter.com/version/saved_searches.format
+  let feedURL = this._self.mBaseURL + "saved_searches." + aFormat;
+  //dump("searches feedURL is " + feedURL + "\n");
+  
+  this._self._sendRequest(feedURL, aCallback, aErrorCallback, true, aContext);
+}
+
+TwitterHelper.prototype.searches.timeline  = 
+function searches_timeline(aCallback, aErrorCallback, aContext, aFormat, aQuery, aSinceId, aCount, aPage)
+{
+  // http://search.twitter.com/search.format
+  var feedURL = "http://search.twitter.com/search."  + aFormat;
+
+  feedURL = this._self._addParamToQueryURL(feedURL, false, aQuery, "q");
+  feedURL = this._self._addParamToQueryURL(feedURL, aQuery, aSinceId, "since_id");
+  feedURL = this._self._addParamToQueryURL(feedURL, aQuery || aSinceId, aCount, "rpp");
+  feedURL = this._self._addParamToQueryURL(feedURL, aQuery || aSinceId || aCount, aPage, "page");
   this._self._sendRequest(feedURL, aCallback, aErrorCallback, true, aContext);
 }
 

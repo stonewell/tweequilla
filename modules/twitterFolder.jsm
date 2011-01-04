@@ -145,7 +145,12 @@ TwitterFolderOverride.prototype =
       twh.lists.get(listener.listsCallback, listener.errorCallback, this, "json", server.username);
     else if (action == "ListTimeline")
       twh.lists.timeline(listener.callback, listener.errorCallback, this, "json",
-                         server.username, this.baseFolder.getStringProperty("ListId"), null, 2);
+                         server.username, this.baseFolder.getStringProperty("ListId"));
+    else if (action == "Searches")
+      twh.searches.get(listener.searchesCallback, listener.errorCallback, this, "json");
+    else if (action == "SearchTimeline")
+      twh.searches.timeline(listener.callback, listener.errorCallback, this, "json",
+                         this.baseFolder.getStringProperty("SearchQuery"));
     else if (action == "Nothing") // mostly for debugging
       this.notifyFolderLoaded();
     else
@@ -194,12 +199,20 @@ TwitterFolderOverride.prototype =
     makeFolder("Retweets of me", "RetweetsOfMe");
     makeFolder("Retweeted by me", "RetweetedByMe");
     makeFolder("My Lists", "Lists");
+    makeFolder("My Searches", "Searches");
   } catch (e) {re(e);}},
 
   reconcileFolder: function _reconcileFolder(aJso)
   {
-    for (item in aJso)
-      this.reconcileItem(aJso[item]);
+    let items;
+    if ('results' in aJso) // this is a search
+    {
+      items = aJso.results;
+    }
+    else
+      items = aJso;
+    for (item in items)
+      this.reconcileItem(items[item]);
   },
 
   reconcileItem: function _reconcileItem(aJsItem)
@@ -212,7 +225,7 @@ TwitterFolderOverride.prototype =
        for (name2 in aJsItem[name1])
          dump(name1 + "." + name2 + ": " + aJsItem[name1][name2] + "\n");
     }
-    */
+    /**/
     // add to database if needed
     let db = this.baseFolder.msgDatabase;
     let existingMsg = db.getMsgHdrForMessageID(aJsItem.id_str);
@@ -243,7 +256,10 @@ TwitterFolderOverride.prototype =
       aJsItem = aJsItem.retweeted_status;
     }
 
-    newMessage.author = "@" + aJsItem.user.screen_name;
+    if (aJsItem.user)
+      newMessage.author = "@" + aJsItem.user.screen_name;
+    else if (aJsItem.from_user)
+      newMessage.author = "@" + aJsItem.from_user;
     newMessage.setUint32Property("notAPhishMessage", 1);
     newMessage.subject = mimeEncodeSubject(aJsItem.text, 'UTF-8');
 
@@ -302,6 +318,52 @@ TwitterFolderOverride.prototype =
     }
   },
 
+  // aJson: the json response from twitter
+  // aJsFolder: the local js version of the Searches folder (parent to the searches)
+  reconcileSearches: function _reconcileSearches(aJson, aJsFolder)
+  {
+    let skinkFolder = aJsFolder.baseFolder;
+
+    // Get a list of existing subfolders
+    let subfolders = skinkFolder.subfolders;
+    let subfoldersFound = {};
+    while (subfolders && subfolders.hasMoreElements())
+    {
+      let folder = subfolders.getNext()
+                             .QueryInterface(Ci.nsIMsgFolder);
+      subfoldersFound[folder.name] = false;
+    }
+
+    // Find and add if needed the searches
+    for (index in aJson)
+    {
+      let name = aJson[index].name;
+      let newFolder;
+      try {
+        newFolder = skinkFolder.getChildNamed(name);
+      } catch(e) {
+        newFolder = skinkFolder.addSubfolder(name);
+        newFolder.setFlag(Ci.nsMsgFolderFlags.CheckNew);
+      }
+      newFolder.setStringProperty("TwitterAction", "SearchTimeline");
+      newFolder.setStringProperty("SearchQuery", aJson[index].query);
+      subfoldersFound[name] = true;
+    }
+
+    // delete any subfolders that no longer exist
+    for (name in subfoldersFound)
+    {
+      if (!subfoldersFound[name])
+      {
+        try {
+          let folderToDelete = skinkFolder.getChildNamed(name);
+          if (!folderToDelete.getFlag(Ci.nsMsgFolderFlags.Virtual))
+            skinkFolder.propagateDelete(folderToDelete, true, null);
+        } catch(e) {}
+      }
+    }
+  },
+
   notifyFolderLoaded: function _notifyFolderLoaded()
   { try {
     if (this.mNeedFolderLoadedEvent)
@@ -333,6 +395,12 @@ FolderListener.prototype =
   {
     //dl('listsCallback');
     jsFolder.reconcileLists(aJson.lists, jsFolder);
+    jsFolder.notifyFolderLoaded();
+  },
+  searchesCallback: function _searchesCallback(aTwh, aJson, jsFolder)
+  {
+    //dl('searchesCallback');
+    jsFolder.reconcileSearches(aJson, jsFolder);
     jsFolder.notifyFolderLoaded();
   },
 
