@@ -116,6 +116,7 @@ TwitterFolderOverride.prototype =
   // **** nsIMsgFolder overrides
   updateFolder: function _updateFolder(aWindow)
   { try {
+
     let server = this.baseFolder.server;
     this.mNeedFolderLoadedEvent = true;
     server instanceof Ci.msqIOverride;
@@ -127,9 +128,17 @@ TwitterFolderOverride.prototype =
     // determine the action to take
     let sinceId = this.baseFolder.getStringProperty("SinceId");
     let action = null;
-    try {
-      action = this.baseFolder.getStringProperty("TwitterAction");
-    } catch(e) {}
+    if (this.baseFolder.getFlag(Ci.nsMsgFolderFlags.Archive))
+    {
+      action = "Nothing";
+    }
+    else
+    {
+      try {
+        action = this.baseFolder.getStringProperty("TwitterAction");
+      } catch(e) {}
+    }
+
     if (action == "UserTimeline")
       twh.statuses.user_timeline(listener.callback, listener.errorCallback, this, "json", null, sinceId, 100);
     else if (action == "FriendsTimeline")
