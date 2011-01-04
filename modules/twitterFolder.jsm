@@ -245,12 +245,12 @@ TwitterFolderOverride.prototype =
 
     newMessage.author = "@" + aJsItem.user.screen_name;
     newMessage.setUint32Property("notAPhishMessage", 1);
-    newMessage.subject = aJsItem.text;
+    newMessage.subject = mimeEncodeSubject(aJsItem.text, 'UTF-8');
 
     let inReplyTo = aJsItem.in_reply_to_status_id_str;
     if (inReplyTo && inReplyTo.length)
       newMessage.setReferences(inReplyTo);
-    dump("\nAdding new message with subject <" + newMessage.subject + "> key " + nextKey + "\n");
+    dump("\nAdding new message with subject <" + newMessage.mime2DecodedSubject + "> key " + nextKey + "\n");
     db.AddNewHdrToDB(newMessage, true);
     return;
   } catch(e) {re(e)}},
@@ -335,4 +335,31 @@ FolderListener.prototype =
     jsFolder.notifyFolderLoaded();
   },
 
+}
+
+var gUnicodeConverter = Components.classes["@mozilla.org/intl/scriptableunicodeconverter"]
+                                  .createInstance(Components.interfaces.nsIScriptableUnicodeConverter);
+gUnicodeConverter.charset = "UTF-8";
+
+// adapted from FeedItem.js
+function mimeEncodeSubject(aSubject, aCharset)
+{
+  // Get the mime header encoder service
+  var mimeEncoder = Components.classes["@mozilla.org/messenger/mimeconverter;1"]
+                              .getService(Components.interfaces.nsIMimeConverter);
+
+  // This routine sometimes throws exceptions for mis-encoded data so
+  // wrap it with a try catch for now..
+  var newSubject;
+  try
+  {
+    newSubject = mimeEncoder.encodeMimePartIIStr_UTF8(aSubject, false, aCharset, 9, 141);
+  }
+  catch (ex)
+  {
+    dl('mime encoder failed ' + ex);
+    newSubject = aSubject;
+  }
+
+  return newSubject;
 }

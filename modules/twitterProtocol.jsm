@@ -137,7 +137,7 @@ TwitterProtocolOverride.prototype =
     let uri = protocol.URI;
     uri instanceof Ci.nsIMsgMessageUrl;
     let msgHdr = uri.messageHeader;
-    //dl("subject is " + msgHdr.subject);
+    //dl("subject is " + msgHdr.mime2DecodedSubject);
     // we need to locate the message header
     let pipe = Cc["@mozilla.org/pipe;1"].createInstance(Ci.nsIPipe);
     pipe.init(false, false, 0, 0xffffffff, null);
@@ -151,28 +151,29 @@ TwitterProtocolOverride.prototype =
       fakeHeaders += name + ": " + value + "\r\n";
     }
     addHeader("MIME-Version", "1.0");
+    addHeader("Content-Type", "text/plain; charset=UTF-8");
     addHeader("From", msgHdr.author);
 
     // We'll detect links, and separate those from the subject shown in the header pane
     let linkRex = /http:\/\/[=a-zA-Z0-9\.\-\/\?]+/;
-    let subject = msgHdr.subject;
+    let subject = msgHdr.mime2DecodedSubject;
     let retweet = msgHdr.getProperty("retweet");
-    let link = msgHdr.subject.match(linkRex);
+    let link = subject.match(linkRex);
     if (link && link.length)
     {
       addHeader("content-base", link);
       subject = subject.replace(linkRex, "");
     }
-    addHeader("subject", subject);
+    addHeader("subject", mimeEncodeSubject(subject, "UTF-8"));
     if (retweet && retweet.length)
       addHeader("retweet", retweet);
 
     // add the body and the body separator
     fakeHeaders += "\r\n";
-    fakeHeaders += msgHdr.subject;
+    fakeHeaders += gUnicodeConverter.ConvertFromUnicode(subject) + gUnicodeConverter.Finish();
     fakeHeaders += "\r\n";
 
-    dump("fakeHeaders: \n" + fakeHeaders);
+    //dump("fakeHeaders: \n" + fakeHeaders);
 
     protocol.onStartRequest(protocol, this.mChannelContext);
     let count = outputStream.write(fakeHeaders, fakeHeaders.length);
@@ -186,3 +187,31 @@ TwitterProtocolOverride.prototype =
       protocol.msgHeaderSink.onEndMsgDownload(uri);
   } catch(e) {re(e)}},
 }
+
+var gUnicodeConverter = Components.classes["@mozilla.org/intl/scriptableunicodeconverter"]
+                                  .createInstance(Components.interfaces.nsIScriptableUnicodeConverter);
+gUnicodeConverter.charset = "UTF-8";
+
+// adapted from FeedItem.js
+function mimeEncodeSubject(aSubject, aCharset)
+{
+  // Get the mime header encoder service
+  var mimeEncoder = Components.classes["@mozilla.org/messenger/mimeconverter;1"]
+                              .getService(Components.interfaces.nsIMimeConverter);
+
+  // This routine sometimes throws exceptions for mis-encoded data so
+  // wrap it with a try catch for now..
+  var newSubject;
+  try
+  {
+    newSubject = mimeEncoder.encodeMimePartIIStr_UTF8(aSubject, false, aCharset, 9, 141);
+  }
+  catch (ex)
+  {
+    dl('mime encoder failed ' + ex);
+    newSubject = aSubject;
+  }
+
+  return newSubject;
+}
+
