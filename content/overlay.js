@@ -155,11 +155,11 @@ var tweequilla = (function _tweequilla() {
 
     // get the message header
     let hdr = messenger.messageServiceFromURI(data).messageURIToMsgHdr(data);
-    if (hdr)
-      dl("subject is " + hdr.subject);
+    //if (hdr)
+      //dl("subject is " + hdr.subject);
     // try to find a URL spec
-    let link = hdr.subject.match(/http:\/\/[=a-zA-Z0-9\.\-\/\?]+/);
-    dl("link is " + link);
+    let link = hdr.mime2DecodedSubject.match(/http:\/\/[=a-zA-Z0-9\.\-\/\?]+/);
+    //dl("link is " + link);
     if (link)
     {
       var contentWindowDoc = window.top.content.document;

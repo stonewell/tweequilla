@@ -157,6 +157,7 @@ TwitterProtocolOverride.prototype =
     // We'll detect links, and separate those from the subject shown in the header pane
     let linkRex = /http:\/\/[=a-zA-Z0-9\.\-\/\?]+/;
     let subject = msgHdr.mime2DecodedSubject;
+    //dl("protocol subject is " + subject);
     let retweet = msgHdr.getProperty("retweet");
     let link = subject.match(linkRex);
     if (link && link.length)
