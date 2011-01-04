@@ -1,1 +1,13 @@
-/* This is just an example.*/
+/* ..... twitter ..... */
+
+.tabmail-tab[type="folder"][ServerType="twitter"],
+treechildren::-moz-tree-image(folderNameCol, serverType-twitter) {
+  list-style-image: url("chrome://tweequilla/skin/t_mini-a.png");
+}
+
+/* Resets list-style-image for Virtual folders */
+
+.tabmail-tab[type="folder"][SpecialFolder="Virtual"][ServerType="twitter"],
+treechildren::-moz-tree-image(folderNameCol, serverType-twitter, specialFolder-Virtual) {
+  list-style-image: url("chrome://messenger/skin/icons/folder.png");
+}

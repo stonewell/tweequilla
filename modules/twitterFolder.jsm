@@ -98,6 +98,11 @@ function TwitterFolder()
   folder.jsParent = this.jsFolder;
   folder.override("msqSgMailFolderOverridable::UpdateFolder");
   folder.override("msqSgMailFolderOverridable::GetSubFolders");
+  folder.override("msqSgMailFolderOverridable::GetCanFileMessages");
+  folder.override("msqSgMailFolderOverridable::GetCanDeleteMessages");
+  folder.override("msqSgMailFolderOverridable::GetCanCreateSubfolders");
+  folder.override("msqSgMailFolderOverridable::GetCanRename");
+  folder.override("msqSgMailFolderOverridable::GetCanCompact");
 
 }
 
@@ -179,6 +184,31 @@ TwitterFolderOverride.prototype =
     let subFolders = base.subFolders;
     return subFolders;
   } catch(e) {re(e);}},
+
+  get canFileMessages()
+  {
+    return false;
+  },
+
+  get canDeleteMessages()
+  {
+    return false;
+  },
+
+  get canCreateSubfolders()
+  {
+    return false;
+  },
+
+  get canCompact()
+  {
+    return false;
+  },
+
+  get canRename()
+  {
+    return false;
+  },
 
   // **** local methods
   // create if needed standard Twitter folders
