@@ -4,3 +4,27 @@ skin     tweequilla classic/1.0 skin/
 resource tweequilla modules/
 overlay  chrome://messenger/content/messenger.xul chrome://tweequilla/content/thunderbirdOverlay.xul
 overlay  chrome://messenger/content/AccountManager.xul chrome://tweequilla/content/AccountManagerOverlay.xul
+component {A6CA1F3D-73F3-4764-A6DC-61D495618533} components/twitterSkinkGlue.js
+component {23BA7D0B-0DC2-48d1-AD03-02AC35707618} components/twitterSkinkGlue.js
+component {A6E4587C-3316-4309-B5CB-67A0431EF849} components/twitterSkinkGlue.js
+component {7D03740F-D990-44db-AFB1-77C7F005330A} components/twitterSkinkGlue.js
+component {DCE1D1D4-9A57-4a01-915B-86CAE416CEE0} components/twitterSkinkGlue.js
+component {852415D6-724F-453e-9967-FC4775C1A614} components/twitterSkinkGlue.js
+component {3C8A4E09-523D-41a8-87F0-E301A86CBCD8} components/twitterSkinkGlue.js
+component {0FB11087-47AF-4c70-BF56-66D264D4B63E} components/twitterSkinkGlue.js
+component {FD87427E-8F1A-4566-B941-1BF1DEB7B60A} components/twitterSkinkGlue.js
+component {5C51C3A9-FD5E-4b87-AA47-7BF268C59AD2} components/twitterSkinkGlue.js
+component {6C51C3A9-FC5E-4b97-AA47-7BF268C59AD2} components/twitterSkinkGlue.js
+contract @mozilla.org/messenger/server;1?type=twitter {A6CA1F3D-73F3-4764-A6DC-61D495618533}
+contract @mozilla.org/messenger/messageservice;1?type=twitter {23BA7D0B-0DC2-48d1-AD03-02AC35707618}
+contract @mozilla.org/messenger/protocol/info;1?type=twitter {A6E4587C-3316-4309-B5CB-67A0431EF849}
+contract @mozilla.org/network/protocol;1?name=twitter {7D03740F-D990-44db-AFB1-77C7F005330A}
+contract @mozilla.org/messenger/messageservice;1?type=twitter-message {DCE1D1D4-9A57-4a01-915B-86CAE416CEE0}
+contract @mozilla.org/network/protocol;1?name=twitter-message {852415D6-724F-453e-9967-FC4775C1A614}
+contract @mozilla.org/accountmanager/extension;1?name=twitterserver {3C8A4E09-523D-41a8-87F0-E301A86CBCD8}
+contract @mozilla.org/accountmanager/extension;1?name=twitterauth {0FB11087-47AF-4c70-BF56-66D264D4B63E}
+contract @mozilla.org/rdf/resource-factory;1?name=twitter {FD87427E-8F1A-4566-B941-1BF1DEB7B60A}
+contract @mesquilla.com/sgprotocol;1?type=twitter {5C51C3A9-FD5E-4b87-AA47-7BF268C59AD2}
+contract @mesquilla.com/sgurl;1?type=twitter {6C51C3A9-FC5E-4b97-AA47-7BF268C59AD2}
+category mailnews-accountmanager-extensions mesquilla-extension-inherit-pane @mozilla.org/accountmanager/extension;1?name=twitterserver
+category mailnews-accountmanager-extensions mesquilla-extension-inherit-pane @mozilla.org/accountmanager/extension;1?name=twitterauth

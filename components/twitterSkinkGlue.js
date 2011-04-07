@@ -184,6 +184,7 @@ var components = [IncomingServer, MsgService, MsgProtocolInfo, NetworkProtocolHa
                   MessageProtocolHandler, NetworkMsgProtocolHandler, AccountManagerServerPanel,
                   AccountManagerAuthPanel, ResourceFactory, Protocol, Url];  
 
-function NSGetModule(compMgr, fileSpec) {  
-  return XPCOMUtils.generateModule(components);  
-}
+if (XPCOMUtils.generateNSGetFactory)
+  var NSGetFactory = XPCOMUtils.generateNSGetFactory(components);
+else
+  var NSGetModule = XPCOMUtils.generateNSGetModule(components);
