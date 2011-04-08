@@ -44,6 +44,7 @@
     <stringbundle id="tweequilla-strings" src="chrome://tweequilla/locale/extension.properties"/>
   </stringbundleset>
 
+  <!--
   <menupopup id="taskPopup">
     <menuitem id="tweequilla-hello" label="tweequilla Test" 
               oncommand="tweequilla.onMenuItemCommand(event);"/>
@@ -52,6 +53,7 @@
     <menuitem id="context-tweequilla" label="tweequilla Test"
               oncommand="tweequilla.onMenuItemCommand(event)"/>
   </popup>
+  -->
 
   <toolbarpalette id="MailToolbarPalette">
     <!-- Twitter send update -->

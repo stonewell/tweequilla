@@ -75,8 +75,10 @@ var tweequilla = (function _tweequilla() {
 
   function setToolbarAccounts()
   {
-    let dropdown = document.getElementById('tweequilla-select-account');
     let popup = document.getElementById('tweequilla-accounts');
+    if (!popup) // twitter toolbar is not showing
+      return;
+    let dropdown = document.getElementById('tweequilla-select-account');
     while (popup.firstChild)
       popup.removeChild(popup.firstChild);
     let textbox = document.getElementById('tweequilla-status-input');
