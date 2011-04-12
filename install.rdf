@@ -2,8 +2,9 @@
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
  xmlns:em="http://www.mozilla.org/2004/em-rdf#">
   <Description about="urn:mozilla:install-manifest">
-    <em:id>tweequilla@mesquilla.com</em:id>
-    <em:name>TweeQuilla - Twitter for Thunderbird</em:name>
+    <em:id>tweequillaapp@mesquilla.com</em:id>
+    <em:type>2</em:type>
+    <em:name>TweeQuilla - Twitter for Thunderbird (App)</em:name>
     <em:version>0.2</em:version>
     <em:creator>R Kent James &lt;rkent@mesquilla.com&gt;</em:creator>
     <em:description>Adds Twitter status feeds as folders under Thunderbird</em:description>

@@ -321,7 +321,6 @@ TwitterFolderOverride.prototype =
     let inReplyTo = aJsItem.in_reply_to_status_id_str;
     if (inReplyTo && inReplyTo.length)
       newMessage.setReferences(inReplyTo);
-    dump("\nAdding new message with subject <" + newMessage.mime2DecodedSubject + "> key " + nextKey + "\n");
     db.AddNewHdrToDB(newMessage, true);
     return aJsItem.id_str;
   } catch(e) {re(e)}},
