@@ -43,6 +43,10 @@ Components.utils.import("resource://tweequilla/oauth.jsm");
 if (typeof JSON == "undefined")
   Components.utils.import("resource://gre/modules/JSON.jsm");
 
+function dl(t) {
+  dump(t + "\n");
+}
+
 /* CONSTRUCTOR */
 
 function TwitterHelper(consumer, aThrobber, aServiceStr)
@@ -56,7 +60,7 @@ function TwitterHelper(consumer, aThrobber, aServiceStr)
   switch (aServiceStr)
   {
     case "twitter":
-      this.mBaseURL = "http://twitter.com/"; 
+      this.mBaseURL = "http://api.twitter.com/1/"; 
       break;
     case "identi.ca":
       this.mBaseURL = "http://identi.ca/api/"; 
@@ -850,6 +854,7 @@ function lists_timeline(aCallback, aErrorCallback, aContext, aFormat, aUser, aLi
 {
   // http://api.twitter.com/version/:user/lists/:id/statuses.format
   var feedURL = this._self.mBaseURL + aUser + "/lists/" + aListId + "/statuses." + aFormat;
+  //dl('lists_timeline feedURL is ' + feedURL);
 
   feedURL = this._self._addParamToQueryURL(feedURL, false, aSinceId, "since_id");
   feedURL = this._self._addParamToQueryURL(feedURL, aSinceId, aCount, "per_page");

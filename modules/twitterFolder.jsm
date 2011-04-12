@@ -355,7 +355,7 @@ TwitterFolderOverride.prototype =
       newFolder.setStringProperty("TwitterAction", "ListTimeline");
       newFolder.setStringProperty("ListId", aJsLists[index].id_str);
       subfoldersFound[name] = true;
-      //dl('Found list ' + name + ' at ' + index);
+      //dl('Found list ' + name + ' at ' + index + ' id_str ' + aJsLists[index].id_str);
     }
 
     // delete any subfolders that no longer exist
