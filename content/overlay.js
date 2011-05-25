@@ -45,6 +45,12 @@ var tweequilla = (function _tweequilla() {
 
   function onLoad() {
 
+    // look for skink glue, and send a console error if missing
+    if (!Cc["@mesquilla.com/sgincomingserver;1"])
+    {
+      Cu.reportError("[TweeQuilla extension] Cannot create Twitter Server. Is New Account Types (SkinkGlue) extension loaded?");
+      return;
+    }
     // add observer to catch message display
     let observerService = Cc["@mozilla.org/observer-service;1"]
                             .getService(Ci.nsIObserverService);

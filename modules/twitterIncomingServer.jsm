@@ -61,7 +61,7 @@ function re(error)
     jsFrame = jsFrame.caller;
   }
   Cu.reportError(error);
-  //throw(error);
+  throw(error);
 }
 
 function dl(t) {
