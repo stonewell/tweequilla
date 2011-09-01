@@ -111,17 +111,17 @@ TwitterIncomingServerOverride.prototype =
   // **** nsIMsgIncomingServer overrides
   getNewMessages: function _getNewMessages(aFolder, aMsgWindow, aUrlListener)
   { try {
-    dl('getNewMessages for folder ' + aFolder.name);
+    //dl('getNewMessages for folder ' + aFolder.name);
     let subfolders = Cc["@mozilla.org/supports-array;1"]
                        .createInstance(Ci.nsISupportsArray);
     aFolder.ListDescendents(subfolders);
-    dl('found ' + subfolders.Count() + ' descendents');
+    //dl('found ' + subfolders.Count() + ' descendents');
     for (let index = 0; index < subfolders.Count(); index++)
     {
       let folder = subfolders.QueryElementAt(index, Ci.nsIMsgFolder);
       if (folder.getFlag(Ci.nsMsgFolderFlags.CheckNew))
       {
-        dl('need to update folder ' + folder.name);
+        //dl('need to update folder ' + folder.name);
         folder.updateFolder(aMsgWindow);
       }
     }
@@ -129,7 +129,7 @@ TwitterIncomingServerOverride.prototype =
 
   performBiff: function _performBiff(aMsgWindow)
   { try {
-    dl('performBiff');
+    //dl('performBiff');
     let server = this.baseServer;
     server.getNewMessages(server.rootMsgFolder, aMsgWindow, null);
   } catch(e) {re(e);}},

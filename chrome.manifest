@@ -26,5 +26,5 @@ contract @mozilla.org/accountmanager/extension;1?name=twitterauth {0FB11087-47AF
 contract @mozilla.org/rdf/resource-factory;1?name=twitter {FD87427E-8F1A-4566-B941-1BF1DEB7B60A}
 contract @mesquilla.com/sgprotocol;1?type=twitter {5C51C3A9-FD5E-4b87-AA47-7BF268C59AD2}
 contract @mesquilla.com/sgurl;1?type=twitter {6C51C3A9-FC5E-4b97-AA47-7BF268C59AD2}
-category mailnews-accountmanager-extensions mesquilla-extension-inherit-pane @mozilla.org/accountmanager/extension;1?name=twitterserver
-category mailnews-accountmanager-extensions mesquilla-extension-inherit-pane @mozilla.org/accountmanager/extension;1?name=twitterauth
+category mailnews-accountmanager-extensions TweeQuillaServerPane @mozilla.org/accountmanager/extension;1?name=twitterserver
+category mailnews-accountmanager-extensions TweeQuillaAuthPane @mozilla.org/accountmanager/extension;1?name=twitterauth

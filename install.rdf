@@ -5,15 +5,15 @@
     <em:id>tweequillaapp@mesquilla.com</em:id>
     <em:type>2</em:type>
     <em:name>TweeQuilla - Twitter for Thunderbird (App)</em:name>
-    <em:version>0.2.2</em:version>
+    <em:version>0.2.3pre</em:version>
     <em:creator>R Kent James &lt;rkent@mesquilla.com&gt;</em:creator>
     <em:description>Adds Twitter status feeds as folders under Thunderbird</em:description>
     <em:homepageURL>http://mesquilla.com/extensions/tweequilla</em:homepageURL>
     <em:targetApplication>
       <Description>
         <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id> <!-- thunderbird -->
-        <em:minVersion>3.1</em:minVersion>
-        <em:maxVersion>5.*</em:maxVersion>
+        <em:minVersion>6.0</em:minVersion>
+        <em:maxVersion>8.*</em:maxVersion>
       </Description>
     </em:targetApplication>
   </Description>

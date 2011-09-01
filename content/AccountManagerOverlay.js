@@ -64,12 +64,23 @@ tweequilla.overrideAccountManager = function _overrideAccountManager()
           // remove unwanted panes
           let treeChildrenNode = node.getElementsByTagName("treechildren")[0];
           let nodeChildren = treeChildrenNode.childNodes;
-          let ewsServerNode = null
-          //  scan backwards to find the ewsServerNode first
+          let twitterServerNode = null
+          //  scan backwards to find the tweequilla ServerNode first
           for (let j = nodeChildren.length - 1; j >= 0; j--)
           {
             let row = nodeChildren[j];
             let pageTag = row.getAttribute('PageTag');
+            if (pageTag == 'am-twitterserver.xul')
+            {
+              twitterServerNode = row;
+            }
+            else if (pageTag == 'am-server.xul')
+            {
+              if (twitterServerNode)
+              {
+                treeChildrenNode.replaceChild(twitterServerNode, row);
+              }
+            }
             if (pageTag == 'am-offline.xul' ||
                 pageTag == 'am-junk.xul' ||
                 pageTag == 'am-mdn.xul' ||

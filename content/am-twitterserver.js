@@ -52,6 +52,7 @@ function onSave()
 function onInit(aPageId, aServerId)
 {
   var Ci = Components.interfaces;
+  //dump('am-twitterserver.js onInit\n');
 
   initServerType();
 

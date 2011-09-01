@@ -122,7 +122,7 @@ AccountManagerAuthPanel.prototype = {
   },
 
   QueryInterface: XPCOMUtils.generateQI([Components.interfaces.nsIMsgAccountManagerExtension]),
-  classDescription: "Twitter server pane",
+  classDescription: "Twitter auth pane",
   classID: Components.ID("{0FB11087-47AF-4c70-BF56-66D264D4B63E}"),
   contractID: "@mozilla.org/accountmanager/extension;1?name=twitterauth",
 
