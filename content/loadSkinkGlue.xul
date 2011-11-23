@@ -1,0 +1,19 @@
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<!DOCTYPE dialog SYSTEM "chrome://tweequilla/locale/extension.dtd">
+<dialog title="&loadSkinkGlue.title;" orient="vertical"
+        autostretch="always" buttons="accept,cancel"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        ondialogaccept="return onAccept();">
+  <script type="application/javascript" src="chrome://tweequilla/content/loadSkinkGlue.js"/>
+  <vbox width='500'>
+    <textbox id='instructions' disabled='true' multiline='true' rows='2'/>
+    <hbox>
+      <button id='accept' dlgtype='accept'/>
+      <button id='cancel' dlgtype='cancel'/>
+    </hbox>
+    <separator/>
+    <statusbar>
+      <statusbarpanel id='statusText' flex='1'/>
+    </statusbar>
+  </vbox>
+</dialog>

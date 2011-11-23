@@ -45,12 +45,10 @@ var tweequilla = (function _tweequilla() {
 
   function onLoad() {
 
-    // look for skink glue, and send a console error if missing
-    if (!Cc["@mesquilla.com/sgincomingserver;1"])
-    {
-      Cu.reportError("[TweeQuilla extension] Cannot create Twitter Server. Is New Account Types (SkinkGlue) extension loaded?");
+    // look for skink glue, and initiate download if missing
+    if (loadSkinkGlue())
       return;
-    }
+
     // add observer to catch message display
     let observerService = Cc["@mozilla.org/observer-service;1"]
                             .getService(Ci.nsIObserverService);
@@ -66,6 +64,17 @@ var tweequilla = (function _tweequilla() {
     let observerService = Cc["@mozilla.org/observer-service;1"]
                             .getService(Ci.nsIObserverService);
     observerService.removeObserver(tweequilla, "MsgMsgDisplayed");
+  }
+
+  function loadSkinkGlue() {
+    // Ask the user if we can load the SkinkGlue application
+    if (!Cc["@mesquilla.com/sgincomingserver;1"])
+    {
+      window.openDialog("chrome://tweequilla/content/loadSkinkGlue.xul", "_blank",
+                        "chrome,dialog=yes");
+      return true;
+    }
+    return false;
   }
 
   function showContextMenu(event) {
@@ -235,7 +244,6 @@ var tweequilla = (function _tweequilla() {
   pub.observe = observe;
   pub.statusKeypress = statusKeypress;
   pub.selectMenuitem = selectMenuitem;
-  //pub.onMakeActive = onMakeActive;
 
   return pub;
 })();

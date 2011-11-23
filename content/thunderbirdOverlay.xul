@@ -46,13 +46,9 @@
 
   <!--
   <menupopup id="taskPopup">
-    <menuitem id="tweequilla-hello" label="tweequilla Test" 
-              oncommand="tweequilla.onMenuItemCommand(event);"/>
+    <menuitem id="tweequilla-hello" label="Load SkinkGlue" 
+              oncommand="tweequilla.loadSkinkGlue();"/>
   </menupopup>
-  <popup id="mailContext">
-    <menuitem id="context-tweequilla" label="tweequilla Test"
-              oncommand="tweequilla.onMenuItemCommand(event)"/>
-  </popup>
   -->
 
   <toolbarpalette id="MailToolbarPalette">
