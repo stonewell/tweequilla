@@ -471,7 +471,7 @@ function statuses_update(aCallback, aErrorCallback, aContext, aFormat, aText, aI
   }
 
   var feedURL = this._self.mBaseURL + "statuses/update." + aFormat;
-  feedURL += "?status=" + escape(aText);
+  feedURL += "?status=" + encodeURIComponent(aText);
   feedURL = this._self._addParamToQueryURL(feedURL, true, aInReplyToStatusId, "in_reply_to_status_id");
 
   this._self._sendPostRequest(feedURL, aCallback, aErrorCallback, true, aContext);
