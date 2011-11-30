@@ -165,7 +165,7 @@ TwitterFolderOverride.prototype =
       twh.searches.get(listener.searchesCallback, listener.errorCallback, this, "json");
     else if (action == "SearchTimeline")
       twh.searches.timeline(listener.callback, listener.errorCallback, this, "json",
-                         this.baseFolder.getStringProperty("SearchQuery"), sinceId, 100);
+                            decodeURIComponent(this.baseFolder.getStringProperty("SearchQuery")), sinceId, 100);
     else if (action == "Nothing") // mostly for debugging
       this.notifyFolderLoaded();
     else
@@ -400,7 +400,7 @@ TwitterFolderOverride.prototype =
         newFolder.setFlag(Ci.nsMsgFolderFlags.CheckNew);
       }
       newFolder.setStringProperty("TwitterAction", "SearchTimeline");
-      newFolder.setStringProperty("SearchQuery", aJson[index].query);
+      newFolder.setStringProperty("SearchQuery", encodeURIComponent(aJson[index].query));
       subfoldersFound[name] = true;
     }
 

@@ -200,6 +200,7 @@ function _getXmlRequest(aFeedURL, aCallback, aErrorCallback, aContext)
     _self._onreadystatechangeTwitter(xmlRequest, aCallback, aErrorCallback, aContext, _self);
   };
   xmlRequest.mozBackgroundRequest = true;
+  //dl('_getXmlRequest ' + aFeedURL);
   xmlRequest.open("GET", aFeedURL, true);
   //xmlRequest.setRequestHeader("If-Modified-Since", "Sat, 1 Jan 2005 00:00:00 GMT");
   xmlRequest.channel.loadFlags |= Components.interfaces.nsIRequest.LOAD_BYPASS_CACHE;
@@ -226,6 +227,7 @@ function _postXmlRequest(aFeedURL, aCallback, aErrorCallback, aContext)
   };
  
   xmlRequest.mozBackgroundRequest = true;
+  //dl('_postXmlRequest ' + aFeedURL);
   xmlRequest.open("POST", aFeedURL, true);
   xmlRequest.setRequestHeader("If-Modified-Since", "Sat, 1 Jan 2005 00:00:00 GMT");
 
@@ -277,7 +279,7 @@ function _addParamToQueryURL(aURL, aPreCondition, aParam, aStringParam)
       url += "&";
     else
       url += "?";
-    url += aStringParam + "=" + escape(aParam.toString().replace( / /g, "+"));
+    url += aStringParam + "=" + encodeURIComponent(aParam.toString().replace( / /g, "+"));
   }
   return url;
 }
@@ -976,5 +978,5 @@ function getURLParam(url, strParamName)
       break;
     }
   }
-  return unescape(strReturn);
+  return decodeURIComponent(strReturn);
 }
