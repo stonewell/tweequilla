@@ -181,8 +181,7 @@ TwitterFolderOverride.prototype =
       this.needsBaseFolders = false;
       this.makeStandardFolders(base);
     }
-    let subFolders = base.subFolders;
-    return subFolders;
+    return base.subFolders;
   } catch(e) {re(e);}},
 
   get canFileMessages()
@@ -228,6 +227,8 @@ TwitterFolderOverride.prototype =
         msgFolder.setFlag(Ci.nsMsgFolderFlags.CheckNew);
       }
       msgFolder.setStringProperty("TwitterAction", aTwitterAction);
+      msgFolder.prettyName = aName;
+
       return msgFolder;
     }
       
@@ -352,6 +353,7 @@ TwitterFolderOverride.prototype =
         newFolder = skinkFolder.addSubfolder(name);
         newFolder.setFlag(Ci.nsMsgFolderFlags.CheckNew);
       }
+      newFolder.prettyName = name;
       newFolder.setStringProperty("TwitterAction", "ListTimeline");
       newFolder.setStringProperty("ListId", aJsLists[index].id_str);
       subfoldersFound[name] = true;
@@ -401,6 +403,7 @@ TwitterFolderOverride.prototype =
       }
       newFolder.setStringProperty("TwitterAction", "SearchTimeline");
       newFolder.setStringProperty("SearchQuery", encodeURIComponent(aJson[index].query));
+      newFolder.prettyName = name;
       subfoldersFound[name] = true;
     }
 
