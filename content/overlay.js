@@ -50,20 +50,86 @@ var tweequilla = (function _tweequilla() {
       return;
 
     // add observer to catch message display
-    let observerService = Cc["@mozilla.org/observer-service;1"]
+    this.observerService = Cc["@mozilla.org/observer-service;1"]
                             .getService(Ci.nsIObserverService);
-    observerService.addObserver(tweequilla, "MsgMsgDisplayed", false);
+    this.observerService.addObserver(this, "MsgMsgDisplayed", false);
     setToolbarAccounts();
-    //dl("Registering tweequilla in FolderDisplayListenerManager");
-    //FolderDisplayListenerManager.registerListener(tweequilla);
+
+    //
+    // We have saved account changes since tweequilla was installed in the
+    // preferences extensions.tweequilla.mail.account.*  What we will
+    // do here is to check to see if there is a twitter account that
+    // we know about, but is not loaded. That should be because the account
+    // was deleted when the profile was run without tweequilla enabled. See
+    // mozilla bug 592710.
+    //
+    this.rootBranch = Cc["@mozilla.org/preferences-service;1"]
+                        .getService(Ci.nsIPrefBranch2);
+    let tqAccountBranch = this.rootBranch.getBranch("extensions.tweequilla.mail.account.");
+    let mailAccountBranch = this.rootBranch.getBranch("mail.account.");
+    let children = tqAccountBranch.getChildList("", {});
+    let accountsToAdd = [];
+    for each (let pref in children)
+    {
+      // look for a server and check if it exists and is twitter
+      if (/^account\d+\.server/.test(pref))
+      {
+        let server = tqAccountBranch.getCharPref(pref);
+        let isTwitter = false; 
+        try {
+          isTwitter = (this.rootBranch.getCharPref('mail.server.' + server + '.type') == 'twitter')
+        } catch(e) {}
+        if (isTwitter) {
+          let accountKey = /^account\d+/.exec(pref)[0];
+          let existingAccount = accountManager.getAccount(accountKey);
+          if (!existingAccount)
+            accountsToAdd.push(accountKey);
+        }
+      }
+    }
+    // now add any missing accounts
+    let accounts;
+    if (accountsToAdd.length)
+    {
+      accountManager.UnloadAccounts();
+      accounts = this.rootBranch.getCharPref('mail.accountmanager.accounts');
+    }
+    let accountKey;
+    for each (accountKey in accountsToAdd)
+    {
+      // add the saved account
+      for each (let pref in children)
+      {
+        let prefAccountKey = /^account\d+/.exec(pref)[0];
+        if (prefAccountKey == accountKey)
+        {
+          copyPref(tqAccountBranch, mailAccountBranch, pref);
+        }
+      }
+      if (accounts.length)
+        accounts += ',';
+      accounts += accountKey;
+    }
+    if (accountsToAdd.length)
+    {
+      this.rootBranch.setCharPref('mail.accountmanager.accounts', accounts);
+      // This is ugly, causes an assertion that a duplicate folder listener is added. I
+      //  think this is a core bug, that UnloadAccounts() leaves a listener dangling. So
+      //  I remove it manually prior to reloading the accounts.
+      let mailSession = Cc["@mozilla.org/messenger/services/session;1"]
+                          .getService(Ci.nsIMsgMailSession);
+      mailSession.RemoveFolderListener(accountManager);
+      accountManager.LoadAccounts();
+      gFolderTreeView._rebuild();
+    }
+
+    // track any additional changes
+    this.rootBranch.addObserver("mail.account", this, false);
   }
 
   function onUnload() {
-    // remove observer to catch message display
-    //FolderDisplayListenerManager.unregisterListener(tweequilla);
-    let observerService = Cc["@mozilla.org/observer-service;1"]
-                            .getService(Ci.nsIObserverService);
-    observerService.removeObserver(tweequilla, "MsgMsgDisplayed");
+    this.observerService.removeObserver(this, "MsgMsgDisplayed");
+    this.rootBranch.removeObserver("mail.account.", this);
   }
 
   function loadSkinkGlue() {
@@ -161,38 +227,47 @@ var tweequilla = (function _tweequilla() {
       event.preventDefault();
   }
 
-  function observe(subject, topic, data) {
-    // only function for twitter messages
-    if (!data.match(/^twitter-message/))
-      return;
-
-    // test of url load.
-    // Adapted from FeedSetContentView
-    // XXX todo: why add content only to remove it here?
-
-    // get the message header
-    let hdr = messenger.messageServiceFromURI(data).messageURIToMsgHdr(data);
-    //if (hdr)
-      //dl("subject is " + hdr.subject);
-    // try to find a URL spec
-    let link = hdr.mime2DecodedSubject.match(/http:\/\/[=a-zA-Z0-9\.\-\/\?]+/);
-    //dl("link is " + link);
-    if (link)
+  function observe(subject, topic, data)
+  {
+    if (topic == "nsPref:changed")
     {
-      var contentWindowDoc = window.top.content.document;
-      var divHTML = new XPCNativeWrapper(contentWindowDoc,
-                          "getElementsByClassName()")
-                          .getElementsByClassName("moz-text-html")[0];
-      var divPLAIN = new XPCNativeWrapper(contentWindowDoc,
-                          "getElementsByClassName()")
-                          .getElementsByClassName("moz-text-plain")[0];
-      if (divHTML)
-        divHTML.parentNode.removeChild(divHTML);
-      if (divPLAIN)
-        divPLAIN.parentNode.removeChild(divPLAIN);
+      // Our goal is to keep a copy of any twitter accounts in our extension preferences,
+      // to allow us to reload any accounts that disappear when the user disables
+      // then re-enables this extension, or the extension fails due to compatibility.
+      let tqBranch = Cc["@mozilla.org/preferences-service;1"]
+                         .getService(Ci.nsIPrefService)
+                         .getBranch("extensions.tweequilla.");
 
-      document.getElementById("messagepane")
-              .loadURI(link, null, null);
+      // save account changes that we see
+      copyPref(this.rootBranch, tqBranch, data);
+    }
+
+    // only function for twitter messages
+    if (topic == 'MsgMsgDisplayed' && data.match(/^twitter-message/))
+    {
+      // XXX todo: why add content only to remove it here?
+
+      // get the message header
+      let hdr = messenger.messageServiceFromURI(data).messageURIToMsgHdr(data);
+      // try to find a URL spec
+      let link = hdr.mime2DecodedSubject.match(/http:\/\/[=a-zA-Z0-9\.\-\/\?]+/);
+      if (link)
+      {
+        var contentWindowDoc = window.top.content.document;
+        var divHTML = new XPCNativeWrapper(contentWindowDoc,
+                            "getElementsByClassName()")
+                            .getElementsByClassName("moz-text-html")[0];
+        var divPLAIN = new XPCNativeWrapper(contentWindowDoc,
+                            "getElementsByClassName()")
+                            .getElementsByClassName("moz-text-plain")[0];
+        if (divHTML)
+          divHTML.parentNode.removeChild(divHTML);
+        if (divPLAIN)
+          divPLAIN.parentNode.removeChild(divPLAIN);
+
+        document.getElementById("messagepane")
+                .loadURI(link, null, null);
+      }
     }
   }
 
@@ -228,12 +303,31 @@ var tweequilla = (function _tweequilla() {
     prefBranch.setCharPref("mailnews.headers.extraExpandedHeaders", expandedHeaders);
   }
 
-  /* FolderDisplayListener
-  function onMakeActive(aFolderDisplay)
+  // Copies a preference from one branch to another 
+  function copyPref(srcBranch, destBranch, aData)
   {
-    dl("\n\nonMakeActive for folder " + aFolderDisplay.view.displayedFolder.name);
+    // save account changes that we see
+    let type = srcBranch.getPrefType(aData);
+    let value;
+    switch (type)
+    {
+      case Ci.nsIPrefBranch.PREF_INVALID:
+        destBranch.clearUserPref(aData);
+        break;
+      case  Ci.nsIPrefBranch.PREF_STRING:
+        value = srcBranch.getCharPref(aData);
+        destBranch.setCharPref(aData, value);
+        break;
+      case Ci.nsIPrefBranch.PREF_INT:
+        value = srcBranch.getIntPref(aData);
+        destBranch.setIntPref(aData, value);
+        break;
+      case Ci.nsIPrefBranch.PREF_BOOL:
+        value = srcBranch.getBoolPref(aData);
+        destBranch.setBoolPref(aData, value);
+        break;
+    }
   }
-  */
 
   // publically accessible items
   let pub = {};
