@@ -53,7 +53,6 @@ var tweequilla = (function _tweequilla() {
     this.observerService = Cc["@mozilla.org/observer-service;1"]
                             .getService(Ci.nsIObserverService);
     this.observerService.addObserver(this, "MsgMsgDisplayed", false);
-    setToolbarAccounts();
 
     //
     // We have saved account changes since tweequilla was installed in the
@@ -125,6 +124,30 @@ var tweequilla = (function _tweequilla() {
 
     // track any additional changes
     this.rootBranch.addObserver("mail.account", this, false);
+
+    // add the tweequilla toolbar button to the default for the toolbar
+    if (this.rootBranch.getBoolPref('extensions.tweequilla.firstRun'))
+    {
+      let toolbar = document.getElementById("mail-bar3");
+      let curSet = toolbar.currentSet;
+      if (curSet.indexOf("tweequilla-statusupdate") == -1)
+      {
+        // Place the button before the urlbar
+        let set = (curSet.indexOf("gloda-search") != -1) ? 
+                     curSet.replace(/gloda-search/, "tweequilla-statusupdate,gloda-search") :
+                     curSet + ",tweequilla-statusupdate";
+        toolbar.setAttribute("currentset", set);
+        toolbar.currentSet = set;
+        document.persist("mail-bar3", "currentset");
+        // If you don't do the following call, funny things happen
+        try {
+          BrowserToolboxCustomizeDone(true);
+        }
+        catch (e) { }
+      }
+      this.rootBranch.setBoolPref('extensions.tweequilla.firstRun', false);
+    }
+    setToolbarAccounts();
   }
 
   function onUnload() {
@@ -240,6 +263,7 @@ var tweequilla = (function _tweequilla() {
 
       // save account changes that we see
       copyPref(this.rootBranch, tqBranch, data);
+      setToolbarAccounts();
     }
 
     // only function for twitter messages
