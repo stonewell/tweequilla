@@ -84,7 +84,9 @@ tweequilla.overrideAccountManager = function _overrideAccountManager()
             if (pageTag == 'am-offline.xul' ||
                 pageTag == 'am-junk.xul' ||
                 pageTag == 'am-mdn.xul' ||
-                pageTag == 'am-smime.xul')
+                pageTag == 'am-smime.xul' ||
+                pageTag == 'am-copies.xul' ||
+                pageTag == 'am-addressing.xul')
             {
               treeChildrenNode.removeChild(row);
             }
@@ -100,24 +102,20 @@ tweequilla.overrideAccountManager = function _overrideAccountManager()
   let _saveAccountOld = saveAccount;
   saveAccount = function _saveAccount(accountValues, account)
   { try {
-    dump("saveAccount override\n");
     _saveAccountOld(accountValues, account);
     if (account && account.incomingServer.type == "twitter")
     {
-      dump("This is a twitter account\n");
       let dummy;
       let secret;
       if ( (dummy = accountValues["dummy"]) &&
            (secret = dummy["accessTokenSecret"]) &&
            secret.length)
       {
-        dump("secret is " + secret + "\n");
         // We need to save the secret, but not in the preferences. So we will add this
         //  to the password manager. If for some reason the account dialog is cancelled, then
         //  this just becomes an unused password which we should clean up later.
         Components.utils.import("resource://tweequilla/oauthTokenMgr.jsm");
         let username = account.incomingServer.username;
-        dump("username is " + username + "\n");
         let pwdMgr = new oauthTokenMgr("tweequilla", username);
         pwdMgr.store(secret);
       }
@@ -125,4 +123,4 @@ tweequilla.overrideAccountManager = function _overrideAccountManager()
   } catch(e) {dump(e + "\n");}}
 }
 
-window.addEventListener("load", tweequilla.overrideAccountManager, false);
+window.addEventListener("load", function(e) { tweequilla.overrideAccountManager(e); }, false);
