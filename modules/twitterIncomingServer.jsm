@@ -69,9 +69,20 @@ function dl(t) {
 }
 
 function TwitterIncomingServer()
-{ try {
-  let server = Cc["@mesquilla.com/sgincomingserver;1"]
-                 .createInstance(Ci.nsIMsgIncomingServer);
+{
+  try {var server = Cc["@mesquilla.com/sgincomingserver;1"]
+                      .createInstance(Ci.nsIMsgIncomingServer);
+  } catch (e)
+  {
+    // This fails if skinkglue is not installed. There is little that we can do about
+    //  it here, but the main addon will detect this and try to fix. Just note it.
+    Cc["@mozilla.org/consoleservice;1"]
+      .getService(Ci.nsIConsoleService)
+      .logStringMessage("Missing New Account Types addon");
+      return;
+   }
+
+  try {
   server instanceof Ci.msqISgIncomingServer;
   server instanceof Ci.msqIOverride;
   //dl("Ci.msqISgIncomingServer is " + Ci.msqISgIncomingServer);
@@ -230,7 +241,7 @@ TwitterIncomingServerOverride.prototype =
 
   normalCallback: function _normalCallback()
   {
-    dl('Normal twitter callback');
+    //dl('Normal twitter callback');
   },
 
   errorCallback: function _errorCallback(aTwitterHelper, aXmlRequest, aContext)

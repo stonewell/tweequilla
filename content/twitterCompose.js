@@ -139,7 +139,7 @@ function setPopupAccounts(aServer)
       }
       let accountElement = document.createElement('menuitem');
       accountElement.setAttribute('label', accountName);
-      accountElement.setAttribute('oncommand', 'selectMenuitem(event);');
+      accountElement.addEventListener("command", function(e) { selectMenuitem(e); }, false);
       accountElement.server = account.incomingServer;
       popup.appendChild(accountElement);
     }

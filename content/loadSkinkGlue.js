@@ -131,6 +131,7 @@ SkinkGlueLoader = {
     }
 
     let updateResult = null;
+    let requestError = false;
     if (status == 'needInstall' || status == 'needUpdate' || status == 'addonFailure')
     {
       // see if we have an available update from the Mozilla site
@@ -149,13 +150,16 @@ SkinkGlueLoader = {
           },
           onUpdateCheckError: function onUpdateCheckError(aStatus)
           {
-             gAsyncDriver.nextStep();
+            requestError = true;
+            gAsyncDriver.nextStep();
           }
         }
       );
       yield;
 
-      if (!updateResult || !updateResult.updateURL || !updateResult.updateURL.length)
+      if (requestError)
+        status = 'requestError';
+      else if (!updateResult || !updateResult.updateURL || !updateResult.updateURL.length)
         status = 'noAvailableUpdate';
       else
         status = 'haveAvailableUpdate';
@@ -164,6 +168,12 @@ SkinkGlueLoader = {
     // now we wait for permission
     switch (status)
     {
+      case 'requestError':
+        gInstructions.value = gStrings.GetStringFromName('requestError');
+        gState = "done";
+        document.getElementById('accept').hidden = false;
+        document.getElementById('cancel').hidden = true;
+        return;
       case 'haveAvailableUpdate':
         gInstructions.value = gStrings.GetStringFromName('loadSkinkGlue');
         gState = "needUpdatePermission";

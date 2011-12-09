@@ -26,7 +26,10 @@ IncomingServer.prototype = {
   classDescription: "Twitter Incoming Server",
   classID:          Components.ID("{A6CA1F3D-73F3-4764-A6DC-61D495618533}"),
   contractID:       "@mozilla.org/messenger/server;1?type=" + gType,
-  QueryInterface:   XPCOMUtils.generateQI([Ci.nsIMsgIncomingServer, Ci.msqISgIncomingServer]),
+
+  // If SkinkGlue is not installed, then don't lie about the interface. This leads to bug 659606
+  QueryInterface: XPCOMUtils.generateQI(
+                    Cc["@mesquilla.com/sgincomingserver;1"] ? [Ci.nsIMsgIncomingServer, Ci.msqISgIncomingServer] : []),
 }
 
 function MsgService() {

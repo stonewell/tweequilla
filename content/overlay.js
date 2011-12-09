@@ -174,7 +174,7 @@ var tweequilla = (function _tweequilla() {
   }
 
   function onMenuItemCommand(e) {
-    dl('onMenuItemCommand');
+    //dl('onMenuItemCommand');
   }
 
   function setToolbarAccounts()
@@ -199,24 +199,24 @@ var tweequilla = (function _tweequilla() {
       if (account.incomingServer.type == "twitter")
       {
         let accountName = account.incomingServer.prettyName;
-        dl('found twitter account ' + accountName);
+        //dl('found twitter account ' + accountName);
         if (!setDefaultAccount)
         {
           setDefaultAccount = true;
           textbox.emptyText = accountName;
           //textbox.value = "ABC";
           //textbox.value = "";
-          dl('set emptytext to ' + accountName);
+          //dl('set emptytext to ' + accountName);
           textbox.account = account;
         }
         let accountElement = document.createElement('menuitem');
         accountElement.setAttribute('label', accountName);
-        accountElement.setAttribute('oncommand', 'tweequilla.selectMenuitem(event);');
+        accountElement.addEventListener("command", function(e) { selectMenuitem(e); }, false);
         accountElement.account = account;
         popup.appendChild(accountElement);
       }
-      else
-        dl('found non-twitter account');
+      //else
+      //  dl('found non-twitter account');
     }
   }
 
@@ -232,7 +232,7 @@ var tweequilla = (function _tweequilla() {
   {
     let textbox = document.getElementById('tweequilla-status-input');
     let server = textbox.account.incomingServer;
-    dl('sendStatusUpdate to ' + server.prettyName);
+    //dl('sendStatusUpdate to ' + server.prettyName);
     let text = textbox.value;
     server instanceof Ci.msqIOverride;
     server.jsParent.wrappedJSObject.sendStatusUpdate(text);
@@ -242,7 +242,7 @@ var tweequilla = (function _tweequilla() {
   function statusKeypress(event) {
     if (event.keyCode == KeyEvent.DOM_VK_RETURN)
     {
-      dl('detected return');
+      //dl('detected return');
       statusUpdate();
     }
     // don't allow more than 140 character
@@ -361,7 +361,6 @@ var tweequilla = (function _tweequilla() {
   pub.onMenuItemCommand = onMenuItemCommand;
   pub.observe = observe;
   pub.statusKeypress = statusKeypress;
-  pub.selectMenuitem = selectMenuitem;
 
   return pub;
 })();
